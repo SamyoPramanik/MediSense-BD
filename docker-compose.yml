@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+      # - ml-inference
+    networks:
+      - medisense-net
+    restart: unless-stopped
+
+  database:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: medisense
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - medisense-net
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d medisense" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./server
+    environment:
+      - DB_URL=postgresql://admin:password@database:5432/medisense
+      - JWT_SECRET=medisense-secret-key-2026
+      - PORT=3000
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - medisense-net
+    restart: unless-stopped
+
+  # ml-inference:
+  #   build: ./ai
+  #   environment:
+  #     - DB_URL=postgresql://admin:password@database:5432/medisense
+  #   depends_on:
+  #     database:
+  #       condition: service_healthy
+  #   networks:
+  #     - medisense-net
+  #   restart: unless-stopped
+
+  frontend:
+    build: ./client
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost/api
+    depends_on:
+      - backend
+    networks:
+      - medisense-net
+    restart: unless-stopped
+
+networks:
+  medisense-net:
+    driver: bridge
+
+volumes:
+  pgdata:
