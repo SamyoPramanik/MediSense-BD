@@ -183,6 +183,7 @@
 .leaflet-container {
   background: var(--bg-primary) !important;
   border-radius: 16px;
+  z-index: 1 !important;
 }
 
 .leaflet-control-zoom a {

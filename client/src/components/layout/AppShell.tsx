@@ -9,7 +9,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen flex">
       <Sidebar />
-      <div className="flex-1 flex flex-col" style={{ marginLeft: '72px' }}>
+      <div className="flex-1 flex flex-col">
         <TopBar />
         <main className="flex-1 p-6 overflow-y-auto">
           <PageTransition>

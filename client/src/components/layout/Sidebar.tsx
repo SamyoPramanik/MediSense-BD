@@ -39,12 +39,13 @@ export default function Sidebar() {
 
   return (
     <motion.aside
-      className="fixed left-0 top-0 h-full z-20 flex flex-col border-r"
+      className="sticky top-0 h-screen z-30 flex flex-col border-r flex-shrink-0"
       style={{
         background: 'rgba(3, 28, 28, 0.85)',
         backdropFilter: 'blur(20px)',
         borderColor: 'rgba(255,255,255,0.08)',
       }}
+      initial={{ width: collapsed ? 72 : 220 }}
       animate={{ width: collapsed ? 72 : 220 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >

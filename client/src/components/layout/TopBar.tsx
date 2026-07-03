@@ -35,7 +35,7 @@ export default function TopBar() {
   };
 
   return (
-    <header className="h-16 flex items-center justify-between px-6 border-b" style={{ background: 'rgba(3, 28, 28, 0.6)', backdropFilter: 'blur(20px)', borderColor: 'rgba(255,255,255,0.08)' }}>
+    <header className="h-16 flex items-center justify-between px-6 border-b relative z-20" style={{ background: 'rgba(3, 28, 28, 0.6)', backdropFilter: 'blur(20px)', borderColor: 'rgba(255,255,255,0.08)' }}>
       {/* Global Search */}
       <div ref={searchRef} className="relative flex-1 max-w-xl">
         <div className="relative">
