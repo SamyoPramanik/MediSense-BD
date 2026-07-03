@@ -8,7 +8,7 @@ services:
     depends_on:
       - frontend
       - backend
-      # - ml-inference
+      - ml-inference
     networks:
       - medisense-net
     restart: unless-stopped
@@ -44,16 +44,16 @@ services:
       - medisense-net
     restart: unless-stopped
 
-  # ml-inference:
-  #   build: ./ai
-  #   environment:
-  #     - DB_URL=postgresql://admin:password@database:5432/medisense
-  #   depends_on:
-  #     database:
-  #       condition: service_healthy
-  #   networks:
-  #     - medisense-net
-  #   restart: unless-stopped
+  ml-inference:
+    build: ./ai
+    environment:
+      - DB_URL=postgresql://admin:password@database:5432/medisense
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - medisense-net
+    restart: unless-stopped
 
   frontend:
     build: ./client

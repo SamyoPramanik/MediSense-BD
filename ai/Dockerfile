@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code
-COPY main.py .
+COPY . .
 
 # Expose FastAPI port
 EXPOSE 8000

@@ -5,6 +5,11 @@ from pydantic import BaseModel
 import numpy as np
 from datetime import datetime, timedelta
 import random
+import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import pandas as pd
+import outbreak_prediction
 
 app = FastAPI(title="MediSense ML Inference", version="1.0.0")
 
@@ -15,6 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+DB_URL = os.getenv("DB_URL", "postgresql://admin:password@database:5432/medisense")
 
 class ForecastRequest(BaseModel):
     district_id: int
@@ -90,6 +96,98 @@ def run_triage(req: TriageRequest):
         "model": "BanglaBERT-Triage-v1",
         "confidence": round(0.75 + random.random() * 0.2, 3),
     }
+
+
+@app.post("/predict/train_and_predict")
+def train_and_predict():
+    """Train the classifier model on DB records and predict outbreaks for tomorrow."""
+    try:
+        # 1. Fetch data from DB
+        conn = psycopg2.connect(DB_URL)
+        query = """
+            SELECT district_id, disease, predicted_date, predicted_cases, 
+                   actual_cases, probability, temperature, humidity, rainfall_mm, season_type 
+            FROM outbreak_predictions
+        """
+        df = pd.read_sql(query, conn)
+        
+        if len(df) == 0:
+            # Fallback: if table is empty, load from outbreak_data.csv
+            csv_path = os.path.join(os.path.dirname(__file__), "outbreak_data.csv")
+            if os.path.exists(csv_path):
+                df = pd.read_csv(csv_path)
+            else:
+                return {"status": "error", "message": "No data found in database or CSV to train on"}
+
+        # 2. Train the model
+        train_result = outbreak_prediction.train_disease_model(df)
+        
+        # 3. Predict for next day (tomorrow) for all 64 districts
+        tomorrow = (datetime.now() + timedelta(days=1)).date()
+        
+        # Fetch the latest climate settings per district to use as inputs
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT DISTINCT ON (district_id) 
+                   district_id, temperature, humidity, rainfall_mm, season_type 
+            FROM outbreak_predictions 
+            ORDER BY district_id, predicted_date DESC
+        """)
+        latest_weather = {row['district_id']: row for row in cursor.fetchall()}
+        
+        predictions_to_insert = []
+        
+        for district_id in range(1, 65):
+            weather = latest_weather.get(district_id, {
+                'temperature': 31.0,
+                'humidity': 80.0,
+                'rainfall_mm': 120.0,
+                'season_type': 'Monsoon'
+            })
+            
+            temp = float(weather.get('temperature') or 31.0)
+            hum = float(weather.get('humidity') or 80.0)
+            rain = float(weather.get('rainfall_mm') or 120.0)
+            season = str(weather.get('season_type') or 'Monsoon')
+            
+            # Predict all diseases and their probabilities
+            disease_probs = outbreak_prediction.predict_all_diseases(
+                district_id, temp, hum, rain, season
+            )
+            
+            for disease, prob in disease_probs:
+                # Generate simulated predicted cases
+                predicted_cases = int(prob * 300 + random.randint(10, 50))
+                
+                predictions_to_insert.append((
+                    district_id, disease, tomorrow, predicted_cases, None, prob, temp, hum, rain, season
+                ))
+            
+        # Delete any existing predictions for tomorrow to avoid duplicates
+        cursor.execute("DELETE FROM outbreak_predictions WHERE predicted_date = %s", (tomorrow,))
+        
+        # Insert new predictions
+        insert_query = """
+            INSERT INTO outbreak_predictions 
+            (district_id, disease, predicted_date, predicted_cases, actual_cases, probability, temperature, humidity, rainfall_mm, season_type)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.executemany(insert_query, predictions_to_insert)
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+        
+        return {
+            "status": "success",
+            "message": f"Successfully trained model and generated predictions for tomorrow ({tomorrow})",
+            "trained_rows": len(df),
+            "predictions_count": len(predictions_to_insert)
+        }
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        return {"status": "error", "message": str(e)}
 
 
 if __name__ == "__main__":

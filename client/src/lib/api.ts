@@ -44,16 +44,23 @@ export const dashboardApi = {
 export const predictApi = {
   outbreaks: () => apiFetch<Array<{
     district_id: number; name: string; name_bn: string; lat: number; lng: number; division: string;
-    disease: string; probability: number; predicted_cases: number; predicted_date: string;
-    temperature: number; humidity: number;
+    diseases: Array<{ disease: string; predicted_cases: number; probability: number; risk: number }>;
+    max_risk: number;
   }>>('/predict/outbreaks'),
   district: (id: number) => apiFetch<{
     district: { id: number; name: string; name_bn: string; lat: number; lng: number; division: string; population: number };
     predictions: Array<{
       disease: string; predicted_date: string; predicted_cases: number; actual_cases: number | null;
-      probability: number; temperature: number; humidity: number;
+      probability: number; temperature: number; humidity: number; rainfall_mm: number; season_type: string;
     }>;
   }>(`/predict/district/${id}`),
+  upload: (csvData: string, mode: 'replace' | 'append') => apiFetch<{ success: boolean; count: number; message: string }>('/predict/upload', {
+    method: 'POST',
+    body: JSON.stringify({ csvData, mode })
+  }),
+  run: () => apiFetch<{ status: string; message: string; trained_rows: number; predictions_count: number }>('/predict/run', {
+    method: 'POST'
+  }),
 };
 
 // Navigate
