@@ -121,8 +121,9 @@ Detects GPS coordinates (`navigator.geolocation`) and queries `/api/navigate/nea
     ```
 
 *   **Bengali Symptom Triage (`TriageChat.tsx` & `server/routes/verify.js`)**: Evaluates Bengali symptom queries (e.g., `'শ্বাসকষ্ট'`, `'জ্বর'`) to classify triage severity (`low`, `moderate`, `critical`). Powered by BanglaBERT keyword matching combined with Groq Cloud AI / OpenAI LLM recommendations, styled markdown rendering (`FormattedMarkdown`), fixed compact height (`h-[520px] max-h-[520px]`), smooth custom scrollbar, and browser `localStorage` conversation persistence (`medisense_triage_chat_messages`).
-*   **Drug Authenticity Verification**: Queries DGDA database by barcode or brand name to confirm verified status vs counterfeit alerts.
-*   **Comprehensive Activity Audit Logging (`auditLogger.js`, `audit.js`, `ActivityTracker.tsx`)**: Automatically records every HTTP request, API response, status code, latency, payload summary, client IP, User-Agent, and user identity (User ID, Email, Role, Gender or Anonymous visitor) alongside front-end page visits (`/dashboard`, `/predict`, `/navigate`, `/verify`, `/female-care`) into a disk-persisted log file (`server/logs/activity_audit.log`). Provides admin-only audit inspection route (`GET /api/audit/logs`).
+*   **Admin-Only Activity Audit Logging (`auditLogger.js`, `audit.js`, `ActivityTracker.tsx`)**: Records every HTTP request, status code, latency, payload summary, client IP, User-Agent, user credentials, and page visits into `server/logs/activity_audit.log`. Strictly restricted to Administrator accounts (`role === 'admin'`).
+*   **Lightweight Table & On-Demand Detail Inspector Drawer (`audit/page.tsx`)**: Renders a high-performance, lightweight HTML audit table (`<table>`) without transferring heavy payload strings. Clicking any row triggers an on-demand detail fetch (`GET /api/audit/logs/:id`) opening a slide-over Log Inspector Drawer with full JSON request payloads, User-Agent headers, and error tracebacks.
+
 
 
 

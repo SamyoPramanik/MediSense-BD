@@ -49,8 +49,8 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
 
-  // Dynamically include femaleCare link if user is female
   const isFemale = user?.gender?.toLowerCase() === 'female';
+  const isAdmin = user?.role === 'admin';
   
   const navItemsList = [
     NAV_ITEMS[0], // Dashboard
@@ -58,9 +58,10 @@ export default function Sidebar() {
     NAV_ITEMS[2], // Navigate
     NAV_ITEMS[3], // Verify
     ...(isFemale ? [{ id: 'female-care', label: 'Female Care AI', href: '/female-care', icon: 'femaleCare' }] : []),
-    { id: 'audit', label: 'Audit & Logs', href: '/audit', icon: 'audit' },
+    ...(isAdmin ? [{ id: 'audit', label: 'Audit & Logs', href: '/audit', icon: 'audit' }] : []),
     NAV_ITEMS[4], // Settings
   ];
+
 
 
   return (

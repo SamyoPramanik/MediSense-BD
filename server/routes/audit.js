@@ -10,45 +10,123 @@ router.post('/page-view', (req, res) => {
   const { path: pagePath, title, referrer } = req.body;
   const timestamp = new Date().toISOString();
 
-  let userInfo = 'Anonymous Visitor';
+  let userObj = null;
+  let userSummary = 'Anonymous Visitor';
   if (req.user) {
-    userInfo = `User ID ${req.user.id} (${req.user.email}, role: ${req.user.role}, gender: ${req.user.gender || 'unspecified'})`;
+    userObj = { id: req.user.id, email: req.user.email, role: req.user.role, gender: req.user.gender };
+    userSummary = `${req.user.email} (${req.user.role})`;
   }
 
   const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1').toString();
-  const userAgent = req.headers['user-agent'] || 'Unknown-Agent';
+  const userAgent = req.headers['user-agent'] || 'Unknown';
+  const entryId = `${Date.now()}-pv`;
 
-  const logLine = `[${timestamp}] | PAGE_VISIT ${pagePath || '/'} | Title: "${title || 'MediSense'}" | User: ${userInfo} | IP: ${ip} | Referrer: ${referrer || 'direct'} | UA: ${userAgent}\n`;
+  const logRecord = {
+    id: entryId,
+    timestamp,
+    type: 'PAGE_VISIT',
+    method: 'GET',
+    url: pagePath || '/',
+    status: 200,
+    durationMs: 0,
+    user: userObj,
+    userSummary,
+    ip,
+    userAgent,
+    payload: { title: title || 'MediSense', referrer: referrer || 'direct' },
+    error: null,
+  };
 
-  fs.appendFile(logFilePath, logLine, (err) => {
+  fs.appendFile(logFilePath, JSON.stringify(logRecord) + '\n', (err) => {
     if (err) console.error('[Audit Logger Error] Failed to write page visit log:', err);
   });
 
-  console.log(`[AUDIT PAGE VISIT] ${logLine.trim()}`);
   res.json({ status: 'ok', logged: true });
 });
 
-// GET /api/audit/logs — Read recent audit logs for system auditing & maintenance
-router.get('/logs', authMiddleware, requireRole('admin', 'analyst', 'user'), (req, res) => {
-
+// GET /api/audit/logs — Read lightweight summary log table (ADMIN ONLY STRICT)
+router.get('/logs', authMiddleware, requireRole('admin'), (req, res) => {
   try {
     if (!fs.existsSync(logFilePath)) {
-      return res.json({ logs: [], message: 'No log file found yet.' });
+      return res.json({ total_entries: 0, showing: 0, logs: [], message: 'No log records found.' });
     }
 
-    const logContent = fs.readFileSync(logFilePath, 'utf8');
-    const lines = logContent.trim().split('\n').filter(Boolean);
-    const recentLogs = lines.slice(-100).reverse(); // Return last 100 entries
+    const fileContent = fs.readFileSync(logFilePath, 'utf8');
+    const rawLines = fileContent.trim().split('\n').filter(Boolean);
+
+    const parsedRecords = [];
+    for (let i = rawLines.length - 1; i >= 0; i--) {
+      try {
+        const item = JSON.parse(rawLines[i]);
+        // Strip heavy fields for table listing to maximize speed & bandwidth
+        parsedRecords.push({
+          id: item.id || `idx-${i}`,
+          timestamp: item.timestamp,
+          type: item.type || 'HTTP',
+          method: item.method || 'GET',
+          url: item.url || '/',
+          status: item.status || 200,
+          durationMs: item.durationMs || 0,
+          userSummary: item.userSummary || 'Anonymous',
+          ip: item.ip || '127.0.0.1',
+          hasPayload: Boolean(item.payload),
+          hasError: Boolean(item.error),
+        });
+      } catch (parseErr) {
+        // Fallback for legacy plain text lines
+        parsedRecords.push({
+          id: `legacy-${i}`,
+          timestamp: new Date().toISOString(),
+          type: 'LEGACY',
+          method: 'LOG',
+          url: rawLines[i].slice(0, 50),
+          status: 200,
+          durationMs: 0,
+          userSummary: 'System',
+          ip: '127.0.0.1',
+          hasPayload: false,
+          hasError: false,
+        });
+      }
+      if (parsedRecords.length >= 150) break; // Return max 150 recent items for fast table loading
+    }
 
     res.json({
-      total_entries: lines.length,
-      showing: recentLogs.length,
-      logs: recentLogs,
+      total_entries: rawLines.length,
+      showing: parsedRecords.length,
+      logs: parsedRecords,
       log_file_path: logFilePath,
     });
   } catch (err) {
     console.error('Failed to read audit logs:', err);
     res.status(500).json({ error: 'Failed to read audit log file' });
+  }
+});
+
+// GET /api/audit/logs/:id — On-demand full detail fetch for a specific log entry (ADMIN ONLY)
+router.get('/logs/:id', authMiddleware, requireRole('admin'), (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!fs.existsSync(logFilePath)) {
+      return res.status(404).json({ error: 'Log record not found' });
+    }
+
+    const fileContent = fs.readFileSync(logFilePath, 'utf8');
+    const rawLines = fileContent.trim().split('\n').filter(Boolean);
+
+    for (let i = rawLines.length - 1; i >= 0; i--) {
+      try {
+        const item = JSON.parse(rawLines[i]);
+        if (item.id === id || `idx-${i}` === id) {
+          return res.json(item);
+        }
+      } catch (e) {}
+    }
+
+    res.status(404).json({ error: 'Log entry not found' });
+  } catch (err) {
+    console.error('Failed to fetch full log details:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

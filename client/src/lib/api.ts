@@ -21,6 +21,27 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
   return res.json();
 }
 
+export interface LightLogItem {
+  id: string;
+  timestamp: string;
+  type: string;
+  method: string;
+  url: string;
+  status: number;
+  durationMs: number;
+  userSummary: string;
+  ip: string;
+  hasPayload: boolean;
+  hasError: boolean;
+}
+
+export interface FullLogItem extends LightLogItem {
+  user?: { id: number; email: string; role: string; gender: string } | null;
+  userAgent?: string;
+  payload?: any;
+  error?: string | null;
+}
+
 // Audit Page View Logging
 export const auditApi = {
   logPageView: (path: string, title?: string, referrer?: string) =>
@@ -29,8 +50,11 @@ export const auditApi = {
       body: JSON.stringify({ path, title, referrer }),
     }),
   getLogs: () =>
-    apiFetch<{ total_entries: number; showing: number; logs: string[]; log_file_path: string }>('/audit/logs'),
+    apiFetch<{ total_entries: number; showing: number; logs: LightLogItem[]; log_file_path: string }>('/audit/logs'),
+  getLogDetails: (id: string) =>
+    apiFetch<FullLogItem>(`/audit/logs/${encodeURIComponent(id)}`),
 };
+
 
 
 // Auth

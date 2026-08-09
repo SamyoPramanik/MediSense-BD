@@ -57,10 +57,12 @@
   - 👁️ **Regular Users**: Read-only access to forecasts, maps, search, navigation, and chatbots. Dataset upload & model retraining are restricted.
   - 🛡️ **Analysts & Admins**: Full access including CSV dataset upload and ML model training execution.
 
-### 9. 📋 System Activity Audit & Maintenance Logging
+### 9. 📋 Admin-Only Activity Audit & Maintenance Logging
 * **Disk-Persisted Log File**: Captures every API request, response status, execution latency, payload summary, client IP, User-Agent, and user identity (User ID, Email, Role, Gender or Anonymous visitor) into `server/logs/activity_audit.log`.
 * **Page Visit Tracking**: Automatically tracks front-end page navigations (`/dashboard`, `/predict`, `/navigate`, `/verify`, `/female-care`, `/audit`) via Next.js `ActivityTracker`.
-* **Frontend Log Explorer Page (`/audit`)**: Dedicated interactive log explorer page with live stream refreshing, search filters (by IP, User Email, path), category tabs (API Calls, Page Visits, 4xx/5xx Errors), and one-click log file export.
+* **Admin-Only Access**: Log viewing endpoints (`/api/audit/logs`) and the sidebar navigation item (`/audit`) are strictly restricted to Administrator accounts (`role === 'admin'`).
+* **Lightweight Table & On-Demand Detail Inspector**: Renders a high-performance, lightweight HTML table (`<table>`) without transferring heavy payload strings. Clicking any row triggers an on-demand detail fetch (`GET /api/audit/logs/:id`) opening a slide-over Log Inspector Drawer with full JSON request payloads, User-Agent headers, and error tracebacks.
+
 
 
 
