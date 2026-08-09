@@ -21,8 +21,18 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
   return res.json();
 }
 
+// Audit Page View Logging
+export const auditApi = {
+  logPageView: (path: string, title?: string, referrer?: string) =>
+    apiFetch<{ status: string }>('/audit/page-view', {
+      method: 'POST',
+      body: JSON.stringify({ path, title, referrer }),
+    }),
+};
+
 // Auth
 export const authApi = {
+
   login: (email: string, password: string) =>
     apiFetch<{ token: string; user: { id: number; email: string; name: string; role: string; gender: string } }>('/auth/login', {
       method: 'POST', body: JSON.stringify({ email, password }),

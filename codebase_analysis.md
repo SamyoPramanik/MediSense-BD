@@ -118,8 +118,10 @@ Detects GPS coordinates (`navigator.geolocation`) and queries `/api/navigate/nea
     ORDER BY distance_km ASC LIMIT 5;
     ```
 
-*   **Bengali Symptom Triage (`TriageChat.tsx` & `server/routes/verify.js`)**: Evaluates Bengali symptom queries (e.g., `'শ্বাসকষ্ট'`, `'জ্বর'`) to classify triage severity (`low`, `moderate`, `critical`). Powered by BanglaBERT keyword matching combined with Groq Cloud AI / OpenAI LLM recommendations, styled markdown rendering (`FormattedMarkdown`), and browser `localStorage` conversation persistence (`medisense_triage_chat_messages`).
+*   **Bengali Symptom Triage (`TriageChat.tsx` & `server/routes/verify.js`)**: Evaluates Bengali symptom queries (e.g., `'শ্বাসকষ্ট'`, `'জ্বর'`) to classify triage severity (`low`, `moderate`, `critical`). Powered by BanglaBERT keyword matching combined with Groq Cloud AI / OpenAI LLM recommendations, styled markdown rendering (`FormattedMarkdown`), fixed compact height (`h-[520px] max-h-[520px]`), smooth custom scrollbar, and browser `localStorage` conversation persistence (`medisense_triage_chat_messages`).
 *   **Drug Authenticity Verification**: Queries DGDA database by barcode or brand name to confirm verified status vs counterfeit alerts.
+*   **Comprehensive Activity Audit Logging (`auditLogger.js`, `audit.js`, `ActivityTracker.tsx`)**: Automatically records every HTTP request, API response, status code, latency, payload summary, client IP, User-Agent, and user identity (User ID, Email, Role, Gender or Anonymous visitor) alongside front-end page visits (`/dashboard`, `/predict`, `/navigate`, `/verify`, `/female-care`) into a disk-persisted log file (`server/logs/activity_audit.log`). Provides admin-only audit inspection route (`GET /api/audit/logs`).
+
 
 
 ---

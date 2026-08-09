@@ -10,10 +10,11 @@ export default function VerifyPage() {
         <p className="text-white/40 text-sm mt-1">AI-powered Bengali symptom triage and DGDA drug authenticity checking</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ minHeight: '600px' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TriageChat />
         <DrugScanner />
       </div>
+
     </div>
   );
 }

@@ -104,9 +104,9 @@ ${symptoms}
   };
 
   return (
-    <div className="glass-card flex flex-col h-full overflow-hidden" style={{ minHeight: '520px' }}>
+    <div className="glass-card flex flex-col h-[520px] max-h-[520px] overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(10,46,46,0.8)' }}>
+      <div className="p-4 border-b flex items-center justify-between flex-shrink-0" style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'rgba(10,46,46,0.8)' }}>
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-md" style={{ background: 'linear-gradient(135deg, #14b8a6, #0d9488)' }}>
             <span className="text-sm">🩺</span>
@@ -129,8 +129,9 @@ ${symptoms}
         )}
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
+      {/* Messages Stream */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs custom-scrollbar">
+
         {messages.map((msg) => (
           <motion.div
             key={msg.id}

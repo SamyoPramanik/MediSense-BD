@@ -14,7 +14,9 @@ const navigateRoutes = require('./routes/navigate');
 const verifyRoutes = require('./routes/verify');
 const searchRoutes = require('./routes/search');
 const chatRoutes = require('./routes/chat');
+const auditRoutes = require('./routes/audit');
 const { authMiddleware } = require('./middleware/auth');
+const { auditLoggerMiddleware } = require('./middleware/auditLogger');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,11 +25,15 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(morgan('short'));
+app.use(auditLoggerMiddleware);
 
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'medisense-backend', timestamp: new Date().toISOString() });
 });
+
+// Audit routes (supports optional auth internally)
+app.use('/api/audit', auditRoutes);
 
 // Public routes
 app.use('/api/auth', authRoutes);
@@ -39,6 +45,7 @@ app.use('/api/navigate', authMiddleware, navigateRoutes);
 app.use('/api/verify', authMiddleware, verifyRoutes);
 app.use('/api/search', authMiddleware, searchRoutes);
 app.use('/api/chat', authMiddleware, chatRoutes);
+
 
 
 // Error handler

@@ -33,7 +33,8 @@ export default function DrugScanner() {
   };
 
   return (
-    <div className="glass-card h-full flex flex-col" style={{ minHeight: '500px' }}>
+    <div className="glass-card flex flex-col h-[520px] max-h-[520px] overflow-y-auto custom-scrollbar">
+
       <div className="p-4 border-b flex items-center gap-2" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
           <span className="text-sm">💊</span>
