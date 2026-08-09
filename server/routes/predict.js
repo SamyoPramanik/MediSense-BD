@@ -1,6 +1,8 @@
 const express = require('express');
 const db = require('../db');
+const { authMiddleware } = require('../middleware/auth');
 const router = express.Router();
+
 
 // GET /api/predict/outbreaks — National outbreak summary with per-district probabilities
 router.get('/outbreaks', async (req, res) => {
@@ -72,10 +74,14 @@ router.get('/district/:id', async (req, res) => {
 });
 
 // POST /api/predict/upload — Upload CSV text to replace or append to the DB table
-router.post('/upload', async (req, res) => {
+router.post('/upload', authMiddleware, async (req, res) => {
+  if (req.user && req.user.role === 'user') {
+    return res.status(403).json({ error: 'Permission denied: Regular users are not allowed to upload datasets.' });
+  }
   const client = await db.pool.connect();
   try {
     const { csvData, mode } = req.body;
+
     if (!csvData) {
       return res.status(400).json({ error: 'No CSV data provided' });
     }
@@ -194,8 +200,12 @@ router.post('/upload', async (req, res) => {
 });
 
 // POST /api/predict/run — Trigger FastAPI ML model training & next-day forecast updates
-router.post('/run', async (req, res) => {
+router.post('/run', authMiddleware, async (req, res) => {
+  if (req.user && req.user.role === 'user') {
+    return res.status(403).json({ error: 'Permission denied: Regular users are not allowed to run model training.' });
+  }
   try {
+
     const response = await fetch('http://ml-inference:8000/predict/train_and_predict', {
       method: 'POST',
       headers: {

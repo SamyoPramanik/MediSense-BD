@@ -7,6 +7,7 @@ interface User {
   email: string;
   name: string;
   role: string;
+  gender: string;
 }
 
 interface AuthCtx {
@@ -14,12 +15,13 @@ interface AuthCtx {
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  signup: (data: { email: string; password: string; full_name: string; gender: string }) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthCtx>({
   user: null, token: null, loading: true,
-  login: async () => {}, logout: () => {},
+  login: async () => {}, signup: async () => {}, logout: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -32,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (stored) {
       setToken(stored);
       authApi.me().then((u) => {
-        setUser({ id: u.id, email: u.email, name: u.full_name, role: u.role });
+        setUser({ id: u.id, email: u.email, name: u.full_name, role: u.role, gender: u.gender || 'unspecified' });
       }).catch(() => {
         localStorage.removeItem('medisense_token');
       }).finally(() => setLoading(false));
@@ -48,6 +50,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(res.user);
   }, []);
 
+  const signup = useCallback(async (data: { email: string; password: string; full_name: string; gender: string }) => {
+    const res = await authApi.register(data);
+    localStorage.setItem('medisense_token', res.token);
+    setToken(res.token);
+    setUser(res.user);
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('medisense_token');
     setToken(null);
@@ -55,10 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 export const useAuth = () => useContext(AuthContext);
+

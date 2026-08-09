@@ -7,6 +7,9 @@ import SlideDrawer from '@/components/ui/SlideDrawer';
 import GlassCard from '@/components/ui/GlassCard';
 import { API_BASE } from '@/lib/constants';
 
+import { useAuth } from '@/hooks/useAuth';
+import { useChat } from '@/components/ai/ChatContext';
+
 // Lazy load map to avoid SSR issues
 const ChoroplethMap = dynamic(() => import('@/components/predict/ChoroplethMap'), { ssr: false, loading: () => <div className="w-full h-[600px] glass-card flex items-center justify-center"><div className="w-6 h-6 border-2 border-teal-500/30 border-t-teal-400 rounded-full animate-spin"/></div> });
 const ForecastChart = dynamic(() => import('@/components/predict/ForecastChart'), { ssr: false });
@@ -15,6 +18,10 @@ type OutbreakData = Awaited<ReturnType<typeof predictApi.outbreaks>>;
 type DistrictDetail = Awaited<ReturnType<typeof predictApi.district>>;
 
 export default function PredictPage() {
+  const { user } = useAuth();
+  const { openChatForDistrict } = useChat();
+  const isRegularUser = user?.role === 'user';
+
   const [outbreaks, setOutbreaks] = useState<OutbreakData>([]);
   const [selectedDistrict, setSelectedDistrict] = useState<number | null>(null);
   const [districtDetail, setDistrictDetail] = useState<DistrictDetail | null>(null);
@@ -26,9 +33,14 @@ export default function PredictPage() {
     predictApi.outbreaks().then(setOutbreaks).catch(console.error);
   }, []);
 
-  const handleDistrictClick = async (districtId: number) => {
+  const handleDistrictClick = async (districtId: number, districtName?: string) => {
     setSelectedDistrict(districtId);
     setDrawerOpen(true);
+
+    // Automatically trigger AI Chatbot drawer with text summary & discussion options
+    const resolvedName = districtName || outbreaks.find(o => o.district_id === districtId)?.name || 'District';
+    openChatForDistrict(districtId, resolvedName);
+
     try {
       const data = await predictApi.district(districtId);
       setDistrictDetail(data);
@@ -38,6 +50,10 @@ export default function PredictPage() {
   };
 
   const handleRunPrediction = async () => {
+    if (isRegularUser) {
+      alert('Regular users cannot trigger model training. Please contact an Analyst or Admin.');
+      return;
+    }
     setRunningPred(true);
     setStatusMessage('Training model and generating next-day forecasts...');
     try {
@@ -82,28 +98,39 @@ export default function PredictPage() {
     <div>
       <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold gradient-text" style={{ fontFamily: 'Outfit' }}>Epidemic Forecasting</h1>
-          <p className="text-white/40 text-sm mt-1">Outbreak probability maps powered by LSTM & Random Forest models</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold gradient-text" style={{ fontFamily: 'Outfit' }}>Epidemic Forecasting</h1>
+            {isRegularUser && (
+              <span className="text-xs px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-300 border border-teal-500/20 font-medium">
+                👁️ View-Only Mode (User)
+              </span>
+            )}
+          </div>
+          <p className="text-white/40 text-sm mt-1">Outbreak probability maps powered by Scikit-Learn & LSTM models. Click any district to open AI Chatbot summary.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Link href="/predict/upload">
-            <button className="px-4 py-2 rounded-xl bg-teal-900/40 text-teal-300 border border-teal-500/20 hover:bg-teal-800/40 hover:border-teal-500/40 transition-all text-sm font-semibold flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-              Upload Dataset
-            </button>
-          </Link>
-          <button
-            onClick={handleRunPrediction}
-            disabled={runningPred}
-            className="px-4 py-2 rounded-xl bg-teal-500 text-white hover:bg-teal-400 disabled:bg-teal-500/40 disabled:text-white/40 disabled:cursor-not-allowed transition-all text-sm font-semibold flex items-center gap-2"
-          >
-            {runningPred ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
-            ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            )}
-            Run Prediction
-          </button>
+          {!isRegularUser && (
+            <>
+              <Link href="/predict/upload">
+                <button className="px-4 py-2 rounded-xl bg-teal-900/40 text-teal-300 border border-teal-500/20 hover:bg-teal-800/40 hover:border-teal-500/40 transition-all text-sm font-semibold flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  Upload Dataset
+                </button>
+              </Link>
+              <button
+                onClick={handleRunPrediction}
+                disabled={runningPred}
+                className="px-4 py-2 rounded-xl bg-teal-500 text-white hover:bg-teal-400 disabled:bg-teal-500/40 disabled:text-white/40 disabled:cursor-not-allowed transition-all text-sm font-semibold flex items-center gap-2"
+              >
+                {runningPred ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                )}
+                Run Prediction
+              </button>
+            </>
+          )}
           <button
             onClick={handleDownloadCSV}
             className="px-4 py-2 rounded-xl bg-white/5 text-white/80 border border-white/10 hover:bg-white/10 transition-all text-sm font-semibold flex items-center gap-2"
@@ -113,6 +140,7 @@ export default function PredictPage() {
           </button>
         </div>
       </div>
+
 
       {statusMessage && (
         <div className="mb-6 p-4 rounded-xl border border-teal-500/20 text-sm" style={{ background: 'rgba(10,46,46,0.95)' }}>

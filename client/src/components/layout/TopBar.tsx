@@ -104,13 +104,27 @@ export default function TopBar() {
         {/* User */}
         {user && (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold" style={{ background: 'linear-gradient(135deg, #14b8a6, #0d9488)' }}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white shadow" style={{ background: user.gender === 'female' ? 'linear-gradient(135deg, #ec4899, #db2777)' : 'linear-gradient(135deg, #14b8a6, #0d9488)' }}>
               {user.name.charAt(0)}
             </div>
-            <button onClick={logout} className="text-xs text-white/40 hover:text-white/70 transition-colors">Logout</button>
+            <div className="hidden sm:block text-left">
+              <p className="text-xs font-semibold text-white/90 leading-tight">{user.name}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className={`text-[10px] px-1.5 py-0.2 rounded font-medium ${user.role === 'admin' || user.role === 'analyst' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-teal-500/20 text-teal-300 border border-teal-500/30'}`}>
+                  {user.role}
+                </span>
+                {user.gender && user.gender !== 'unspecified' && (
+                  <span className="text-[10px] text-white/50 capitalize">
+                    ({user.gender})
+                  </span>
+                )}
+              </div>
+            </div>
+            <button onClick={logout} className="text-xs text-white/40 hover:text-white/70 transition-colors ml-1">Logout</button>
           </div>
         )}
       </div>
     </header>
   );
 }
+

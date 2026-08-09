@@ -8,9 +8,12 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(255) NOT NULL,
-    role VARCHAR(50) DEFAULT 'analyst',
+    role VARCHAR(50) DEFAULT 'user',
+    gender VARCHAR(20) DEFAULT 'unspecified',
     created_at TIMESTAMP DEFAULT NOW()
 );
+ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(20) DEFAULT 'unspecified';
+
 
 -- 2. Bangladesh 64 Districts
 CREATE TABLE IF NOT EXISTS districts (
@@ -113,20 +116,45 @@ CREATE TABLE IF NOT EXISTS activity_feed (
 -- SEED DATA
 -- ============================================
 
--- Default admin user (password: medisense2026)
+-- Default users (admin, analyst, female user, regular user)
 INSERT INTO
     users (
         email,
         password_hash,
         full_name,
-        role
+        role,
+        gender
     )
 VALUES (
         'admin@medisense.bd',
         '$2a$10$GZXdNVyzCTeSQ4iOlkf2yeBWlI7aB1XlmX4Elo8S3oyZlIPgEMGWi',
         'Admin User',
-        'admin'
-    );
+        'admin',
+        'male'
+    ),
+    (
+        'female@medisense.bd',
+        '$2a$10$GZXdNVyzCTeSQ4iOlkf2yeBWlI7aB1XlmX4Elo8S3oyZlIPgEMGWi',
+        'Ayesha Rahman',
+        'user',
+        'female'
+    ),
+    (
+        'user@medisense.bd',
+        '$2a$10$GZXdNVyzCTeSQ4iOlkf2yeBWlI7aB1XlmX4Elo8S3oyZlIPgEMGWi',
+        'Tanvir Hasan',
+        'user',
+        'male'
+    ),
+    (
+        'analyst@medisense.bd',
+        '$2a$10$GZXdNVyzCTeSQ4iOlkf2yeBWlI7aB1XlmX4Elo8S3oyZlIPgEMGWi',
+        'Dr. Nusrat Jahan',
+        'analyst',
+        'female'
+    )
+ON CONFLICT (email) DO NOTHING;
+
 
 -- All 64 Districts
 INSERT INTO

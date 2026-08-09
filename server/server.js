@@ -8,6 +8,7 @@ const predictRoutes = require('./routes/predict');
 const navigateRoutes = require('./routes/navigate');
 const verifyRoutes = require('./routes/verify');
 const searchRoutes = require('./routes/search');
+const chatRoutes = require('./routes/chat');
 const { authMiddleware } = require('./middleware/auth');
 
 const app = express();
@@ -32,6 +33,8 @@ app.use('/api/predict', authMiddleware, predictRoutes);
 app.use('/api/navigate', authMiddleware, navigateRoutes);
 app.use('/api/verify', authMiddleware, verifyRoutes);
 app.use('/api/search', authMiddleware, searchRoutes);
+app.use('/api/chat', authMiddleware, chatRoutes);
+
 
 // Error handler
 app.use((err, req, res, next) => {

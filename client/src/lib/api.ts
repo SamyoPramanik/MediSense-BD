@@ -24,11 +24,28 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
 // Auth
 export const authApi = {
   login: (email: string, password: string) =>
-    apiFetch<{ token: string; user: { id: number; email: string; name: string; role: string } }>('/auth/login', {
+    apiFetch<{ token: string; user: { id: number; email: string; name: string; role: string; gender: string } }>('/auth/login', {
       method: 'POST', body: JSON.stringify({ email, password }),
     }),
-  me: () => apiFetch<{ id: number; email: string; full_name: string; role: string }>('/auth/me'),
+  register: (data: { email: string; password: string; full_name: string; gender: string; role?: string }) =>
+    apiFetch<{ token: string; user: { id: number; email: string; name: string; role: string; gender: string } }>('/auth/register', {
+      method: 'POST', body: JSON.stringify(data),
+    }),
+  me: () => apiFetch<{ id: number; email: string; full_name: string; role: string; gender: string }>('/auth/me'),
 };
+
+// AI Chatbot API
+export const chatApi = {
+  query: (data: { message?: string; districtId?: number | null; history?: Array<{ sender: string; text: string }> }) =>
+    apiFetch<{ reply: string; district?: any; source?: string }>('/chat/query', {
+      method: 'POST', body: JSON.stringify(data),
+    }),
+  femaleCare: (data: { message?: string; history?: Array<{ sender: string; text: string }> }) =>
+    apiFetch<{ reply: string; source?: string }>('/chat/female-care', {
+      method: 'POST', body: JSON.stringify(data),
+    }),
+};
+
 
 // Dashboard
 export const dashboardApi = {

@@ -28,7 +28,7 @@ function getColor(risk: number): string {
   return '#22c55e';
 }
 
-export default function ChoroplethMap({ outbreaks, onDistrictClick }: { outbreaks: OutbreakItem[]; onDistrictClick: (id: number) => void }) {
+export default function ChoroplethMap({ outbreaks, onDistrictClick }: { outbreaks: OutbreakItem[]; onDistrictClick: (id: number, name: string) => void }) {
   return (
     <div className="glass-card overflow-hidden" style={{ height: '600px' }}>
       <MapContainer center={BANGLADESH_CENTER} zoom={BANGLADESH_ZOOM} className="w-full h-full" style={{ background: '#031c1c' }}
@@ -48,8 +48,9 @@ export default function ChoroplethMap({ outbreaks, onDistrictClick }: { outbreak
             color={getColor(item.max_risk || 0)}
             weight={1.5}
             opacity={0.8}
-            eventHandlers={{ click: () => onDistrictClick(item.district_id) }}
+            eventHandlers={{ click: () => onDistrictClick(item.district_id, item.name) }}
           >
+
             <Tooltip direction="top" offset={[0, -10]} className="!bg-transparent !border-0 !shadow-none">
               <div className="glass-card !rounded-lg px-3 py-2 text-xs" style={{ background: 'rgba(10,46,46,0.95)' }}>
                 <p className="font-semibold text-white">{item.name} <span className="text-white/40">{item.name_bn}</span></p>
