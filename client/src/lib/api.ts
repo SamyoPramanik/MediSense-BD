@@ -31,6 +31,8 @@ export interface LightLogItem {
   durationMs: number;
   userSummary: string;
   ip: string;
+  hasRequestPayload?: boolean;
+  hasResponsePayload?: boolean;
   hasPayload: boolean;
   hasError: boolean;
 }
@@ -38,9 +40,12 @@ export interface LightLogItem {
 export interface FullLogItem extends LightLogItem {
   user?: { id: number; email: string; role: string; gender: string } | null;
   userAgent?: string;
+  requestPayload?: any;
+  responsePayload?: any;
   payload?: any;
   error?: string | null;
 }
+
 
 // Audit Page View Logging
 export const auditApi = {

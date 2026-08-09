@@ -57,12 +57,11 @@
   - 👁️ **Regular Users**: Read-only access to forecasts, maps, search, navigation, and chatbots. Dataset upload & model retraining are restricted.
   - 🛡️ **Analysts & Admins**: Full access including CSV dataset upload and ML model training execution.
 
-### 9. 📋 Admin-Only Activity Audit & Maintenance Logging
-* **Disk-Persisted Log File**: Captures every API request, response status, execution latency, payload summary, client IP, User-Agent, and user identity into `server/logs/activity_audit.log`. Requests to `/api/audit/*` and visits to `/audit` are automatically excluded to prevent recursive log feedback loops.
-
+* **Disk-Persisted Log File**: Captures every API request, response status, execution latency, request payload, response payload, client IP, User-Agent, and user identity into `server/logs/activity_audit.log`. Requests to `/api/audit/*` and visits to `/audit` are automatically excluded to prevent recursive log feedback loops.
 * **Page Visit Tracking**: Automatically tracks front-end page navigations (`/dashboard`, `/predict`, `/navigate`, `/verify`, `/female-care`, `/audit`) via Next.js `ActivityTracker`.
 * **Admin-Only Access**: Log viewing endpoints (`/api/audit/logs`) and the sidebar navigation item (`/audit`) are strictly restricted to Administrator accounts (`role === 'admin'`).
-* **Lightweight Table & On-Demand Detail Inspector**: Renders a high-performance, lightweight HTML table (`<table>`) without transferring heavy payload strings. Clicking any row triggers an on-demand detail fetch (`GET /api/audit/logs/:id`) opening a slide-over Log Inspector Drawer with full JSON request payloads, User-Agent headers, and error tracebacks.
+* **Lightweight Table & Dual Payload Inspector Drawer**: Renders a high-performance, lightweight HTML table (`<table>`) without transferring heavy payload strings. Clicking any row triggers an on-demand detail fetch (`GET /api/audit/logs/:id`) opening a slide-over Log Inspector Drawer with full JSON Request & Response payload viewers, User-Agent headers, and error tracebacks.
+
 
 
 

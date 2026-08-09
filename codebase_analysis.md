@@ -121,8 +121,9 @@ Detects GPS coordinates (`navigator.geolocation`) and queries `/api/navigate/nea
     ```
 
 *   **Bengali Symptom Triage (`TriageChat.tsx` & `server/routes/verify.js`)**: Evaluates Bengali symptom queries (e.g., `'শ্বাসকষ্ট'`, `'জ্বর'`) to classify triage severity (`low`, `moderate`, `critical`). Powered by BanglaBERT keyword matching combined with Groq Cloud AI / OpenAI LLM recommendations, styled markdown rendering (`FormattedMarkdown`), fixed compact height (`h-[520px] max-h-[520px]`), smooth custom scrollbar, and browser `localStorage` conversation persistence (`medisense_triage_chat_messages`).
-*   **Admin-Only Activity Audit Logging (`auditLogger.js`, `audit.js`, `ActivityTracker.tsx`)**: Records every HTTP request, status code, latency, payload summary, client IP, User-Agent, user credentials, and page visits into `server/logs/activity_audit.log`. Strictly restricted to Administrator accounts (`role === 'admin'`). Requests to `/api/audit/*` and visits to `/audit` are automatically bypassed to prevent log feedback loops.
-*   **Lightweight Table & On-Demand Detail Inspector Drawer (`audit/page.tsx`)**: Renders a high-performance, lightweight HTML audit table (`<table>`) without transferring heavy payload strings. Clicking any row triggers an on-demand detail fetch (`GET /api/audit/logs/:id`) opening a slide-over Log Inspector Drawer with full JSON request payloads, User-Agent headers, and error tracebacks.
+*   **Admin-Only Activity Audit Logging (`auditLogger.js`, `audit.js`, `ActivityTracker.tsx`)**: Records every HTTP request, response status, execution latency, request payload, response payload, client IP, User-Agent, user credentials, and page visits into `server/logs/activity_audit.log`. Strictly restricted to Administrator accounts (`role === 'admin'`). Requests to `/api/audit/*` and visits to `/audit` are automatically bypassed to prevent log feedback loops.
+*   **Lightweight Table & Dual Payload Inspector Drawer (`audit/page.tsx`)**: Renders a high-performance, lightweight HTML audit table (`<table>`) without transferring heavy payload strings. Clicking any row triggers an on-demand detail fetch (`GET /api/audit/logs/:id`) opening a slide-over Log Inspector Drawer with full JSON Request & Response payload viewers, User-Agent headers, and error tracebacks.
+
 
 
 

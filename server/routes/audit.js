@@ -74,10 +74,12 @@ router.get('/logs', authMiddleware, requireRole('admin'), (req, res) => {
           status: item.status || 200,
           durationMs: item.durationMs || 0,
           userSummary: item.userSummary || 'Anonymous',
-          ip: item.ip || '127.0.0.1',
-          hasPayload: Boolean(item.payload),
+          hasRequestPayload: Boolean(item.requestPayload || item.payload),
+          hasResponsePayload: Boolean(item.responsePayload),
+          hasPayload: Boolean(item.requestPayload || item.payload || item.responsePayload),
           hasError: Boolean(item.error),
         });
+
       } catch (parseErr) {
         // Fallback for legacy plain text lines
         parsedRecords.push({

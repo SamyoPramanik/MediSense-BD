@@ -376,17 +376,30 @@ export default function AuditLogsPage() {
                     </div>
                   )}
 
-                  {/* Request Payload */}
+                  {/* Request Body Payload */}
                   <div className="space-y-1">
-                    <p className="text-white/40 text-[10px] uppercase tracking-wider font-semibold">Request Payload</p>
-                    {selectedLogDetail.payload ? (
-                      <pre className="p-3 rounded-xl bg-slate-950 border border-white/10 font-mono text-[10px] text-teal-200 overflow-x-auto">
-                        {JSON.stringify(selectedLogDetail.payload, null, 2)}
+                    <p className="text-white/40 text-[10px] uppercase tracking-wider font-semibold">📥 Request Body Payload</p>
+                    {selectedLogDetail.requestPayload || selectedLogDetail.payload ? (
+                      <pre className="p-3 rounded-xl bg-slate-950 border border-white/10 font-mono text-[10px] text-teal-200 overflow-x-auto max-h-48 custom-scrollbar">
+                        {JSON.stringify(selectedLogDetail.requestPayload || selectedLogDetail.payload, null, 2)}
                       </pre>
                     ) : (
-                      <p className="text-white/40 italic text-[11px]">No body payload provided for this request.</p>
+                      <p className="text-white/40 italic text-[11px]">No request body payload.</p>
                     )}
                   </div>
+
+                  {/* Response Body Payload */}
+                  <div className="space-y-1">
+                    <p className="text-white/40 text-[10px] uppercase tracking-wider font-semibold">📤 Response Body Payload</p>
+                    {selectedLogDetail.responsePayload ? (
+                      <pre className="p-3 rounded-xl bg-slate-950 border border-white/10 font-mono text-[10px] text-emerald-200 overflow-x-auto max-h-56 custom-scrollbar">
+                        {JSON.stringify(selectedLogDetail.responsePayload, null, 2)}
+                      </pre>
+                    ) : (
+                      <p className="text-white/40 italic text-[11px]">No response payload recorded.</p>
+                    )}
+                  </div>
+
                 </div>
               ) : (
                 <div className="flex-1 flex items-center justify-center text-rose-400 text-xs">
