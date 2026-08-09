@@ -124,7 +124,9 @@ Detects GPS coordinates (`navigator.geolocation`) and queries `/api/navigate/nea
 *   **Admin-Only Activity Audit Logging (`auditLogger.js`, `audit.js`, `ActivityTracker.tsx`)**: Records every HTTP request, response status, execution latency, request payload, response payload, client IP, User-Agent, user credentials, and page visits into `server/logs/activity_audit.log`. Strictly restricted to Administrator accounts (`role === 'admin'`). Requests to `/api/audit/*` and visits to `/audit` are automatically bypassed to prevent log feedback loops.
 *   **Universal Markdown & Table Parser (`FormattedMarkdown.tsx`)**: Supports all heading levels H1 (`#`) through H6 (`######`), fixing Bengali/English H4 headings like `#### প্রাথমিক পদক্ষেপ:`. Fixed unordered list bullet regex (`/^[\*\-\+]\s+/`) to eliminate extra hyphens (`-`) on bulleted items. Includes support for fenced code blocks, inline code, markdown links (`[text](url)`), blockquotes, lists, badges, and responsive HTML tables.
 
+*   **Multi-Device LAN & Relative API Routing (`constants.ts`, `Dockerfile`, `docker-compose.yml`)**: Configured relative API routing (`API_BASE = '/api'`) across client fetch hooks and Docker build arguments (`ARG NEXT_PUBLIC_API_URL=/api`). Prevents `Failed to fetch` errors when accessing MediSense from mobile phones, tablets, or secondary devices connected to the same local Wi-Fi network (`http://<lan-ip>`).
 *   **Global Footer (`Footer.tsx`)**: Rendered inside `AppShell.tsx` with developer credit (*"Planned and Developed by Samyo Pramanik"*), GitHub profile logo link ([SamyoPramanik](https://github.com/SamyoPramanik)), MediSense-BD repository source code link ([MediSense-BD](https://github.com/SamyoPramanik/MediSense-BD)), and contact email (`samyopramanik2003@gmail.com`).
+
 
 
 

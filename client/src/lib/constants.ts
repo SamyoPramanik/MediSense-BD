@@ -1,4 +1,5 @@
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost/api';
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
+
 
 export const COLORS = {
   teal: { 950: '#031c1c', 900: '#0a2e2e', 800: '#0d4f4f', 700: '#0f6868', 600: '#0d9488', 500: '#14b8a6', 400: '#2dd4bf', 300: '#5eead4', 200: '#99f6e4', 100: '#ccfbf1' },

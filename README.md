@@ -20,7 +20,9 @@
 * **Live Search & Database Retrieval**: Queries PostgreSQL database history and web search index citations to answer questions on local disease precautions, hospital bed availability, and treatment guidelines.
 * **Universal Markdown & Table Formatting**: Custom styled parser (`FormattedMarkdown`) rendering headers (H1 through H6, including `####` subheadings), bold text, italic, inline code, fenced code blocks, blockquotes, clean bullet points (with hyphens `-` properly stripped), numbered lists, badges, links (`[text](url)`), and responsive HTML Tables (`<table>`) with hoverable rows.
 
+* **Multi-Device Local Wi-Fi / LAN Access**: Configured relative API routing (`API_BASE = '/api'`) and Docker build arguments (`ARG NEXT_PUBLIC_API_URL=/api`), allowing mobile phones, tablets, and secondary devices on the same Wi-Fi network to access `http://<your-ip>` without experiencing CORS or `Failed to fetch` connection errors.
 * **User-Isolated LocalStorage Persistence**: Chat message history and active district context are dynamically scoped to the logged-in user ID (`medisense_chat_messages_u${user.id}`). Different users logging into the same browser cannot access or view another user's chat history.
+
 * **OpenAI & Groq Cloud AI Drop-In Ready**: Supports `GROQ_API_KEY` (`llama-3.3-70b-versatile`) for ultra-fast response generation, `OPENAI_API_KEY` (`gpt-4o-mini`), and built-in MediSense fallback engine.
 * **High-Capacity Non-Truncated Output**: Configured LLM token limits (`max_tokens: 8000`) and automatic syntax repair in `FormattedMarkdown` so long responses, multi-district tables, and medical recommendations complete cleanly without cutting off midway.
 * **Robust Off-Topic Guardrails**: System prompts across all chatbots strictly enforce domain boundaries, politely refusing unrelated topics (coding, sports, finance, entertainment) while directing users to medical & public health guidance.

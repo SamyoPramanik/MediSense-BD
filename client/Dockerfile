@@ -3,6 +3,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+ARG NEXT_PUBLIC_API_URL=/api
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Install dependencies
 COPY package*.json ./
 RUN npm ci
@@ -18,6 +21,7 @@ WORKDIR /app
 
 # Set environment to production
 ENV NODE_ENV=production
+ENV NEXT_PUBLIC_API_URL=/api
 
 # Copy only the necessary files from the builder stage
 COPY --from=builder /app/public ./public
