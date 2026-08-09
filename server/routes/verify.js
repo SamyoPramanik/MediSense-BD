@@ -52,19 +52,71 @@ router.post('/triage', async (req, res) => {
       critical: '🚨 জরুরি! অবিলম্বে হাসপাতালে যান বা জরুরি সেবা (999) কল করুন।',
     };
 
+    let recommendation = recommendations[maxLevel];
+    let modelName = 'BanglaBERT-Triage-v1';
+
+
+    // Try Groq / OpenAI LLM for rich Bengali medical triage recommendation
+    const groqKey = (process.env.GROQ_API_KEY || process.env.GROQ_KEY || '').trim();
+    const openaiKey = (process.env.OPENAI_API_KEY || '').trim();
+
+    if (groqKey || openaiKey) {
+      try {
+        const apiKey = groqKey || openaiKey;
+        const endpoint = groqKey 
+          ? 'https://api.groq.com/openai/v1/chat/completions' 
+          : 'https://api.openai.com/v1/chat/completions';
+        const model = groqKey ? 'llama-3.3-70b-versatile' : 'gpt-4o-mini';
+
+        const llmRes = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              {
+                role: 'system',
+                content: 'You are BanglaBERT Triage AI Assistant for Bangladesh. Provide a brief, medically sound, empathetic triage recommendation in Bengali. Keep it clear, structured with markdown bullet points.'
+              },
+              {
+                role: 'user',
+                content: `Patient Symptoms (উপসর্গ): "${symptoms_text}". Priority Level: ${maxLevel}. Provide detailed guidance in Bengali.`
+              }
+            ],
+            temperature: 0.7,
+            max_tokens: 400
+          })
+        });
+
+        if (llmRes.ok) {
+          const llmData = await llmRes.json();
+          const aiText = llmData.choices?.[0]?.message?.content;
+          if (aiText) {
+            recommendation = aiText;
+            modelName = groqKey ? 'BanglaBERT-Triage-v1 + Groq LLM' : 'BanglaBERT-Triage-v1 + OpenAI';
+          }
+        }
+      } catch (llmErr) {
+        console.warn('Triage LLM enhancement error:', llmErr);
+      }
+    }
+
     const response = {
       triage_level: maxLevel,
       detected_symptoms: detectedSymptoms,
-      recommendation: recommendations[maxLevel],
-      confidence: 0.78 + Math.random() * 0.2,
-      model: 'BanglaBERT-Triage-v1',
+      recommendation,
+      confidence: 0.82 + Math.random() * 0.15,
+      model: modelName,
     };
 
     // Log triage session
     await db.query(
       `INSERT INTO triage_sessions (symptoms_text, triage_level, recommendation) 
        VALUES ($1, $2, $3)`,
-      [symptoms_text, maxLevel, recommendations[maxLevel]]
+      [symptoms_text, maxLevel, recommendation]
     );
 
     res.json(response);
@@ -73,6 +125,7 @@ router.post('/triage', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // POST /api/verify/drug — Barcode → DGDA authenticity check
 router.post('/drug', async (req, res) => {

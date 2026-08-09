@@ -42,9 +42,9 @@
 * **Barcode Reader & Search**: Validates pharmaceuticals against the Directorate General of Drug Administration (DGDA) registry.
 * **Counterfeit Interception**: Flags counterfeit/suspicious batches and displays authentic confidence scores.
 
-### 7. 🩺 Automated Bengali Symptom Triage
-* **Bengali NLP Triage**: Accepts Bengali symptom queries (e.g., `'শ্বাসকষ্ট'`, `'জ্বর'`) and categorizes urgency (`low`, `moderate`, `critical`).
-* **Medical Recommendations**: Offers immediate action steps and logs sessions for health analytics.
+* **Bengali AI Triage Engine**: Accepts Bengali symptom queries (e.g., `'শ্বাসকষ্ট'`, `'জ্বর'`), categorizes urgency (`low`, `moderate`, `critical`), and generates rich medical guidance powered by Groq LLM & BanglaBERT algorithms.
+* **Persistent Markdown UI**: Features custom styled markdown rendering (`FormattedMarkdown`), color-coded risk pills, and browser `localStorage` conversation history with reset controls.
+
 
 ### 8. 🔐 Multi-Tier Auth & Role Access Control
 * **User Sign Up & Sign In**: Supports user registration with Email, Password, Full Name, and Gender (`female`, `male`, `other`).

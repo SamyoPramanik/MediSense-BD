@@ -114,9 +114,9 @@ Detects GPS coordinates (`navigator.geolocation`) and queries `/api/navigate/nea
     ORDER BY distance_km ASC LIMIT 5;
     ```
 
-### F. Bengali Triage Chatbot & DGDA Drug Authentication
-*   **Symptom Triage (`server/routes/verify.js`)**: Evaluates Bengali keywords (e.g., `'শ্বাসকষ্ট'`, `'জ্বর'`) to classify severity levels (`low`, `moderate`, `critical`) and returns patient guidance.
+*   **Bengali Symptom Triage (`TriageChat.tsx` & `server/routes/verify.js`)**: Evaluates Bengali symptom queries (e.g., `'শ্বাসকষ্ট'`, `'জ্বর'`) to classify triage severity (`low`, `moderate`, `critical`). Powered by BanglaBERT keyword matching combined with Groq Cloud AI / OpenAI LLM recommendations, styled markdown rendering (`FormattedMarkdown`), and browser `localStorage` conversation persistence (`medisense_triage_chat_messages`).
 *   **Drug Authenticity Verification**: Queries DGDA database by barcode or brand name to confirm verified status vs counterfeit alerts.
+
 
 ---
 

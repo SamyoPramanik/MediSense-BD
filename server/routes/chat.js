@@ -31,7 +31,7 @@ async function queryLLM(systemPrompt, userMessage, history = []) {
           model: 'llama-3.3-70b-versatile',
           messages,
           temperature: 0.7,
-          max_tokens: 800
+          max_tokens: 8000
         })
       });
 
@@ -65,7 +65,7 @@ async function queryLLM(systemPrompt, userMessage, history = []) {
           model: 'gpt-4o-mini',
           messages,
           temperature: 0.7,
-          max_tokens: 800
+          max_tokens: 8000
         })
       });
 
@@ -102,7 +102,7 @@ router.post('/query', async (req, res) => {
       const distRes = await db.query('SELECT * FROM districts WHERE id = $1', [districtId]);
       if (distRes.rows.length > 0) {
         districtInfo = distRes.rows[0];
-        
+
         // Fetch predictions & weather
         const predRes = await db.query(
           `SELECT disease, predicted_date, predicted_cases, probability, temperature, humidity, rainfall_mm, season_type 
