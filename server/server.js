@@ -1,6 +1,11 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+
 
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');

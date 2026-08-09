@@ -2,44 +2,93 @@ const express = require('express');
 const db = require('../db');
 const router = express.Router();
 
-// Helper to query OpenAI API if OPENAI_API_KEY is available
-async function queryOpenAI(systemPrompt, userMessage, history = []) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return null;
+// Helper to query Groq API or OpenAI API if keys are available
+async function queryLLM(systemPrompt, userMessage, history = []) {
+  const groqKey = (process.env.GROQ_API_KEY || process.env.GROQ_KEY || process.env.GROQ_API_TOKEN || '').trim();
+  const openaiKey = (process.env.OPENAI_API_KEY || '').trim();
 
-  try {
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      ...history.map(h => ({ role: h.sender === 'user' ? 'user' : 'assistant', content: h.text })),
-      { role: 'user', content: userMessage }
-    ];
+  console.log(`[AI Chat] Invoking LLM query. Groq Key: ${groqKey ? 'PRESENT (len: ' + groqKey.length + ')' : 'MISSING'}, OpenAI Key: ${openaiKey ? 'PRESENT (len: ' + openaiKey.length + ')' : 'MISSING'}`);
 
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages,
-        temperature: 0.7,
-        max_tokens: 600
-      })
-    });
+  if (!groqKey && !openaiKey) return null;
 
-    if (!res.ok) {
-      console.warn('OpenAI API returned non-OK status:', res.status);
-      return null;
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...history.map(h => ({ role: h.sender === 'user' ? 'user' : 'assistant', content: h.text })),
+    { role: 'user', content: userMessage }
+  ];
+
+  // 1. Try Groq API first if key configured (Ultra-fast LLM Inference)
+  if (groqKey && groqKey.length > 5) {
+    try {
+      console.log('[AI Chat] Calling Groq Cloud API (llama-3.3-70b-versatile)...');
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${groqKey}`
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages,
+          temperature: 0.7,
+          max_tokens: 800
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const reply = data.choices?.[0]?.message?.content;
+        if (reply) {
+          console.log('[AI Chat] Groq Cloud API response received successfully!');
+          return { reply, source: 'Groq Cloud AI (llama-3.3-70b)' };
+        }
+      } else {
+        const errText = await res.text().catch(() => '');
+        console.warn(`[AI Chat] Groq API returned non-OK status ${res.status}: ${errText}`);
+      }
+    } catch (err) {
+      console.error('[AI Chat] Groq fetch exception:', err);
     }
-
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content || null;
-  } catch (err) {
-    console.error('OpenAI fetch error:', err);
-    return null;
   }
+
+  // 2. Fallback to OpenAI API if key configured
+  if (openaiKey && openaiKey.length > 5) {
+    try {
+      console.log('[AI Chat] Calling OpenAI API (gpt-4o-mini)...');
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openaiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages,
+          temperature: 0.7,
+          max_tokens: 800
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const reply = data.choices?.[0]?.message?.content;
+        if (reply) {
+          console.log('[AI Chat] OpenAI API response received successfully!');
+          return { reply, source: 'OpenAI API (gpt-4o-mini)' };
+        }
+      } else {
+        const errText = await res.text().catch(() => '');
+        console.warn(`[AI Chat] OpenAI API returned non-OK status ${res.status}: ${errText}`);
+      }
+    } catch (err) {
+      console.error('[AI Chat] OpenAI fetch exception:', err);
+    }
+  }
+
+  console.log('[AI Chat] Falling back to internal MediSense Intelligent AI Engine.');
+  return null;
 }
+
 
 // POST /api/chat/query — General & District AI Chatbot
 router.post('/query', async (req, res) => {
@@ -83,19 +132,19 @@ router.post('/query', async (req, res) => {
       }
     }
 
-    // Try OpenAI first if API key configured
+    // Prepare system prompt with DB context
     const systemPrompt = `You are MediSense AI Assistant, an expert epidemiologist and healthcare guide for Bangladesh.
 ${districtContext ? `Context for District ${districtContext.district.name} (${districtContext.district.name_bn || ''}), Division: ${districtContext.district.division}, Population: ${districtContext.district.population}:
 - Latest Outbreak Predictions: ${JSON.stringify(districtContext.predictions.slice(0, 3))}
-- Healthcare Capacity: ${districtContext.hospitals.count} hospitals, ${districtContext.hospitals.availableBeds}/${districtContext.hospitals.totalBeds} available beds.` : ''}
+- Healthcare Capacity: ${districtContext.hospitals.count} emergency hospitals, ${districtContext.hospitals.availableBeds}/${districtContext.hospitals.totalBeds} available beds.` : ''}
 Provide accurate, concise, and helpful advice in bullet points or markdown format. Include references to DGDA/IEDCR standards where applicable.`;
 
-    const openAIResponse = await queryOpenAI(systemPrompt, message || 'Provide summary', history);
-    if (openAIResponse) {
+    const llmResult = await queryLLM(systemPrompt, message || 'Provide summary', history);
+    if (llmResult) {
       return res.json({
-        reply: openAIResponse,
+        reply: llmResult.reply,
         district: districtInfo,
-        source: 'OpenAI API (gpt-4o-mini)',
+        source: llmResult.source,
       });
     }
 
@@ -200,11 +249,11 @@ router.post('/female-care', async (req, res) => {
 You offer empathetic, confidential, and medically sound advice for women regarding mental health, maternal & reproductive health, nutrition (anemia prevention), workplace stress, and emotional well-being.
 Use warm, respectful language in English (or Bengali terms where helpful). Keep answers clear and supportive.`;
 
-    const openAIResponse = await queryOpenAI(systemPrompt, message || 'Hello', history);
-    if (openAIResponse) {
+    const llmResult = await queryLLM(systemPrompt, message || 'Hello', history);
+    if (llmResult) {
       return res.json({
-        reply: openAIResponse,
-        source: 'OpenAI API (gpt-4o-mini)',
+        reply: llmResult.reply,
+        source: llmResult.source,
       });
     }
 

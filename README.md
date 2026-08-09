@@ -19,7 +19,8 @@
 * **Floating Assistant**: Accessible on every page via a floating glassmorphic launcher.
 * **Live Search & Database Retrieval**: Queries PostgreSQL database history and web search index citations to answer questions on local disease precautions, hospital bed availability, and treatment guidelines.
 * **Rich Markdown Formatting**: Features custom styled rendering (`FormattedMarkdown`) for headers, bold highlights, bullet points, badges, and numbered lists.
-* **OpenAI Drop-In Ready**: Configured for `OPENAI_API_KEY` (`gpt-4o-mini`) with a built-in intelligent MediSense fallback engine.
+* **OpenAI & Groq Cloud AI Drop-In Ready**: Supports `GROQ_API_KEY` (`llama-3.3-70b-versatile`) for ultra-fast response generation, `OPENAI_API_KEY` (`gpt-4o-mini`), and built-in MediSense fallback engine.
+
 
 ### 4. 🌸 Dedicated Female Healthcare & Mental Support (`Nari Care AI`)
 * **Gender-Aware UI**: Dynamically reveals the **"Female Care AI"** nav item in the sidebar for female users.
@@ -106,7 +107,9 @@ The application operates out-of-the-box with default values. Optional environmen
 PORT=3000
 JWT_SECRET=medisense-secret-key-2026
 DB_URL=postgres://medisense:medisense2026@database:5432/medisense
-OPENAI_API_KEY=your_openai_api_key_here  # Optional: For OpenAI gpt-4o-mini support
+GROQ_API_KEY=your_groq_api_key_here    # Ultra-fast Groq LLM (llama-3.3-70b-versatile)
+OPENAI_API_KEY=your_openai_api_key_here  # Optional: OpenAI (gpt-4o-mini)
+
 
 # Client Envs
 NEXT_PUBLIC_API_URL=http://localhost/api
