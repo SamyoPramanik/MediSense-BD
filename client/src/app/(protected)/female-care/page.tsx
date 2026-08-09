@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import GlassCard from '@/components/ui/GlassCard';
 import FormattedMarkdown from '@/components/ui/FormattedMarkdown';
 import { chatApi } from '@/lib/api';
-
+import { useAuth } from '@/hooks/useAuth';
 
 interface Message {
   id: string;
@@ -15,11 +15,13 @@ interface Message {
 }
 
 export default function FemaleCarePage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'welcome',
-      sender: 'ai',
-      text: `### 🌸 Welcome to Nari Care AI (নারী কেয়ার)
+  const { user } = useAuth();
+  const userIdKey = user ? `u${user.id}` : 'anon';
+
+  const defaultWelcome: Message = {
+    id: 'welcome',
+    sender: 'ai',
+    text: `### 🌸 Welcome to Nari Care AI (নারী কেয়ার)
 
 Hello! I am your personal health companion and confidential AI counselor. I am here to provide compassionate guidance on:
 
@@ -29,38 +31,43 @@ Hello! I am your personal health companion and confidential AI counselor. I am h
 * 🛡️ **Confidential Health Q&A**
 
 How are you feeling today? You can choose a quick topic below or ask any question freely.`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      source: 'Nari Care AI Guide',
-    },
-  ]);
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    source: 'Nari Care AI Guide',
+  };
 
+  const [messages, setMessages] = useState<Message[]>([defaultWelcome]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Restore persistent female care messages from browser localStorage
+  // Restore user-isolated female care messages from browser localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('medisense_female_care_messages');
+      const saved = localStorage.getItem(`medisense_female_care_messages_${userIdKey}`);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setMessages(parsed);
+        } else {
+          setMessages([defaultWelcome]);
         }
+      } else {
+        setMessages([defaultWelcome]);
       }
     } catch (e) {
       console.error('Failed to load female care messages:', e);
     }
-  }, []);
+  }, [userIdKey]);
 
-  // Save female care messages to browser localStorage
+  // Save user-isolated female care messages to browser localStorage
   useEffect(() => {
     try {
       if (messages.length > 0) {
-        localStorage.setItem('medisense_female_care_messages', JSON.stringify(messages));
+        localStorage.setItem(`medisense_female_care_messages_${userIdKey}`, JSON.stringify(messages));
       }
     } catch (e) {}
-  }, [messages]);
+  }, [messages, userIdKey]);
+
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

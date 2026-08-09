@@ -37,6 +37,11 @@ const icons: Record<string, React.ReactNode> = {
       <circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2m-9-11h2m18 0h2m-3.64-6.36-1.41 1.41M6.05 17.95l-1.41 1.41m0-12.72 1.41 1.41M17.95 17.95l1.41 1.41"/>
     </svg>
   ),
+  audit: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+    </svg>
+  ),
 };
 
 export default function Sidebar() {
@@ -47,16 +52,16 @@ export default function Sidebar() {
   // Dynamically include femaleCare link if user is female
   const isFemale = user?.gender?.toLowerCase() === 'female';
   
-  const navItemsList = isFemale
-    ? [
-        NAV_ITEMS[0], // Dashboard
-        NAV_ITEMS[1], // Predict
-        NAV_ITEMS[2], // Navigate
-        NAV_ITEMS[3], // Verify
-        { id: 'female-care', label: 'Female Care AI', href: '/female-care', icon: 'femaleCare' },
-        NAV_ITEMS[4], // Settings
-      ]
-    : NAV_ITEMS;
+  const navItemsList = [
+    NAV_ITEMS[0], // Dashboard
+    NAV_ITEMS[1], // Predict
+    NAV_ITEMS[2], // Navigate
+    NAV_ITEMS[3], // Verify
+    ...(isFemale ? [{ id: 'female-care', label: 'Female Care AI', href: '/female-care', icon: 'femaleCare' }] : []),
+    { id: 'audit', label: 'Audit & Logs', href: '/audit', icon: 'audit' },
+    NAV_ITEMS[4], // Settings
+  ];
+
 
   return (
     <motion.aside

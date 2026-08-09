@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { verifyApi } from '@/lib/api';
 import FormattedMarkdown from '@/components/ui/FormattedMarkdown';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Message {
   id: number;
@@ -32,34 +33,41 @@ const defaultInitialMessage: Message = {
 };
 
 export default function TriageChat() {
+  const { user } = useAuth();
+  const userIdKey = user ? `u${user.id}` : 'anon';
+
   const [messages, setMessages] = useState<Message[]>([defaultInitialMessage]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Restore persistent triage chat messages from browser localStorage
+  // Restore user-isolated triage chat messages from browser localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('medisense_triage_chat_messages');
+      const saved = localStorage.getItem(`medisense_triage_chat_messages_${userIdKey}`);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setMessages(parsed);
+        } else {
+          setMessages([defaultInitialMessage]);
         }
+      } else {
+        setMessages([defaultInitialMessage]);
       }
     } catch (err) {
       console.error('Failed to load triage chat history:', err);
     }
-  }, []);
+  }, [userIdKey]);
 
-  // Save triage chat messages to browser localStorage
+  // Save user-isolated triage chat messages to browser localStorage
   useEffect(() => {
     try {
       if (messages.length > 0) {
-        localStorage.setItem('medisense_triage_chat_messages', JSON.stringify(messages));
+        localStorage.setItem(`medisense_triage_chat_messages_${userIdKey}`, JSON.stringify(messages));
       }
     } catch (err) {}
-  }, [messages]);
+  }, [messages, userIdKey]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -68,9 +76,10 @@ export default function TriageChat() {
   const handleClearHistory = () => {
     setMessages([defaultInitialMessage]);
     try {
-      localStorage.removeItem('medisense_triage_chat_messages');
+      localStorage.removeItem(`medisense_triage_chat_messages_${userIdKey}`);
     } catch (e) {}
   };
+
 
   const send = async () => {
     if (!input.trim() || loading) return;

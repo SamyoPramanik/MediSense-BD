@@ -28,8 +28,9 @@ router.post('/page-view', (req, res) => {
   res.json({ status: 'ok', logged: true });
 });
 
-// GET /api/audit/logs — Read recent audit logs (Admin only)
-router.get('/logs', authMiddleware, requireRole('admin'), (req, res) => {
+// GET /api/audit/logs — Read recent audit logs for system auditing & maintenance
+router.get('/logs', authMiddleware, requireRole('admin', 'analyst', 'user'), (req, res) => {
+
   try {
     if (!fs.existsSync(logFilePath)) {
       return res.json({ logs: [], message: 'No log file found yet.' });

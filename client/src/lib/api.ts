@@ -28,7 +28,10 @@ export const auditApi = {
       method: 'POST',
       body: JSON.stringify({ path, title, referrer }),
     }),
+  getLogs: () =>
+    apiFetch<{ total_entries: number; showing: number; logs: string[]; log_file_path: string }>('/audit/logs'),
 };
+
 
 // Auth
 export const authApi = {

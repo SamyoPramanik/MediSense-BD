@@ -20,10 +20,11 @@
 * **Live Search & Database Retrieval**: Queries PostgreSQL database history and web search index citations to answer questions on local disease precautions, hospital bed availability, and treatment guidelines.
 * **Rich Markdown & Table Formatting**: Custom styled parser (`FormattedMarkdown`) rendering headers, bold text, bullet points, numbered lists, badges, and responsive HTML Tables (`<table>`) with hoverable rows.
 
-* **Browser LocalStorage Persistence**: Chat message history and active district context automatically persist across browser reloads, tab navigation, and user sessions, with trash-bin clear history controls.
+* **User-Isolated LocalStorage Persistence**: Chat message history and active district context are dynamically scoped to the logged-in user ID (`medisense_chat_messages_u${user.id}`). Different users logging into the same browser cannot access or view another user's chat history.
 * **OpenAI & Groq Cloud AI Drop-In Ready**: Supports `GROQ_API_KEY` (`llama-3.3-70b-versatile`) for ultra-fast response generation, `OPENAI_API_KEY` (`gpt-4o-mini`), and built-in MediSense fallback engine.
 * **High-Capacity Non-Truncated Output**: Configured LLM token limits (`max_tokens: 8000`) and automatic syntax repair in `FormattedMarkdown` so long responses, multi-district tables, and medical recommendations complete cleanly without cutting off midway.
 * **Robust Off-Topic Guardrails**: System prompts across all chatbots strictly enforce domain boundaries, politely refusing unrelated topics (coding, sports, finance, entertainment) while directing users to medical & public health guidance.
+
 
 
 
@@ -58,8 +59,9 @@
 
 ### 9. 📋 System Activity Audit & Maintenance Logging
 * **Disk-Persisted Log File**: Captures every API request, response status, execution latency, payload summary, client IP, User-Agent, and user identity (User ID, Email, Role, Gender or Anonymous visitor) into `server/logs/activity_audit.log`.
-* **Page Visit Tracking**: Automatically tracks front-end page navigations (`/dashboard`, `/predict`, `/navigate`, `/verify`, `/female-care`) via Next.js `ActivityTracker`.
-* **Admin Audit Endpoint**: Includes admin-restricted endpoint (`GET /api/audit/logs`) to inspect recent audit logs for system maintenance, auditing, and updates.
+* **Page Visit Tracking**: Automatically tracks front-end page navigations (`/dashboard`, `/predict`, `/navigate`, `/verify`, `/female-care`, `/audit`) via Next.js `ActivityTracker`.
+* **Frontend Log Explorer Page (`/audit`)**: Dedicated interactive log explorer page with live stream refreshing, search filters (by IP, User Email, path), category tabs (API Calls, Page Visits, 4xx/5xx Errors), and one-click log file export.
+
 
 
 ---

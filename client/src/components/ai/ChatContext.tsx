@@ -1,6 +1,7 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { chatApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface ChatMessage {
   id: string;
@@ -37,57 +38,64 @@ const ChatContext = createContext<ChatContextType>({
 });
 
 export function ChatProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  const userIdKey = user ? `u${user.id}` : 'anon';
+
   const [isOpen, setIsOpen] = useState(false);
   const [districtId, setDistrictId] = useState<number | null>(null);
   const [districtName, setDistrictName] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Restore persistent messages from browser localStorage on mount
+  // Restore user-isolated chat messages from localStorage on user / mount change
   useEffect(() => {
     try {
-      const savedMessages = localStorage.getItem('medisense_global_chat_messages');
+      const savedMessages = localStorage.getItem(`medisense_global_chat_messages_${userIdKey}`);
       if (savedMessages) {
         const parsed = JSON.parse(savedMessages);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setMessages(parsed);
+        } else {
+          setMessages([]);
         }
+      } else {
+        setMessages([]);
       }
 
-      const savedDistId = localStorage.getItem('medisense_chat_district_id');
-      if (savedDistId) setDistrictId(Number(savedDistId));
+      const savedDistId = localStorage.getItem(`medisense_chat_district_id_${userIdKey}`);
+      setDistrictId(savedDistId ? Number(savedDistId) : null);
 
-      const savedDistName = localStorage.getItem('medisense_chat_district_name');
-      if (savedDistName) setDistrictName(savedDistName);
+      const savedDistName = localStorage.getItem(`medisense_chat_district_name_${userIdKey}`);
+      setDistrictName(savedDistName || null);
     } catch (err) {
-      console.error('Failed to restore chat history from localStorage:', err);
+      console.error('Failed to restore user chat history from localStorage:', err);
     }
-  }, []);
+  }, [userIdKey]);
 
-  // Sync messages & active district to browser localStorage
+  // Sync user-isolated messages & district context to localStorage
   useEffect(() => {
     try {
       if (messages.length > 0) {
-        localStorage.setItem('medisense_global_chat_messages', JSON.stringify(messages));
+        localStorage.setItem(`medisense_global_chat_messages_${userIdKey}`, JSON.stringify(messages));
       } else {
-        localStorage.removeItem('medisense_global_chat_messages');
+        localStorage.removeItem(`medisense_global_chat_messages_${userIdKey}`);
       }
 
       if (districtId) {
-        localStorage.setItem('medisense_chat_district_id', String(districtId));
+        localStorage.setItem(`medisense_chat_district_id_${userIdKey}`, String(districtId));
       } else {
-        localStorage.removeItem('medisense_chat_district_id');
+        localStorage.removeItem(`medisense_chat_district_id_${userIdKey}`);
       }
 
       if (districtName) {
-        localStorage.setItem('medisense_chat_district_name', districtName);
+        localStorage.setItem(`medisense_chat_district_name_${userIdKey}`, districtName);
       } else {
-        localStorage.removeItem('medisense_chat_district_name');
+        localStorage.removeItem(`medisense_chat_district_name_${userIdKey}`);
       }
     } catch (err) {
-      console.error('Failed to sync chat history to localStorage:', err);
+      console.error('Failed to sync user chat history to localStorage:', err);
     }
-  }, [messages, districtId, districtName]);
+  }, [messages, districtId, districtName, userIdKey]);
 
   const openChat = useCallback(() => {
     setIsOpen(true);
@@ -102,11 +110,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setDistrictId(null);
     setDistrictName(null);
     try {
-      localStorage.removeItem('medisense_global_chat_messages');
-      localStorage.removeItem('medisense_chat_district_id');
-      localStorage.removeItem('medisense_chat_district_name');
+      localStorage.removeItem(`medisense_global_chat_messages_${userIdKey}`);
+      localStorage.removeItem(`medisense_chat_district_id_${userIdKey}`);
+      localStorage.removeItem(`medisense_chat_district_name_${userIdKey}`);
     } catch (err) {}
-  }, []);
+  }, [userIdKey]);
 
   const openChatForDistrict = useCallback(async (dId: number, dName: string) => {
     setDistrictId(dId);
