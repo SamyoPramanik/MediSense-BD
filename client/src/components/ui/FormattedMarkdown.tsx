@@ -296,8 +296,9 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
 
     // Bullet points: * Item, - Item, + Item
     if (trimmed.startsWith('* ') || trimmed.startsWith('- ') || trimmed.startsWith('+ ')) {
-      const itemText = trimmed.replace(/^[*|-|+]\s+/, '');
+      const itemText = trimmed.replace(/^[\*\-\+]\s+/, '');
       listItems.push(
+
         <li key={`li-${index}`} className="flex items-start gap-2 text-white/90 text-xs leading-relaxed">
           <span className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${bulletBg}`} />
           <span className="flex-1">{parseInline(itemText)}</span>
