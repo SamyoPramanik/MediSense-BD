@@ -20,7 +20,9 @@
 * **Live Search & Database Retrieval**: Queries PostgreSQL database history and web search index citations to answer questions on local disease precautions, hospital bed availability, and treatment guidelines.
 * **Rich Markdown & Table Formatting**: Custom styled parser (`FormattedMarkdown`) rendering headers, bold text, bullet points, numbered lists, badges, and responsive HTML Tables (`<table>`) with hoverable rows.
 
+* **Browser LocalStorage Persistence**: Chat message history and active district context automatically persist across browser reloads, tab navigation, and user sessions, with trash-bin clear history controls.
 * **OpenAI & Groq Cloud AI Drop-In Ready**: Supports `GROQ_API_KEY` (`llama-3.3-70b-versatile`) for ultra-fast response generation, `OPENAI_API_KEY` (`gpt-4o-mini`), and built-in MediSense fallback engine.
+
 
 
 ### 4. 🌸 Dedicated Female Healthcare & Mental Support (`Nari Care AI`)

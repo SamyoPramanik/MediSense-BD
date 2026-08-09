@@ -1,5 +1,5 @@
 'use client';
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { chatApi } from '@/lib/api';
 
 export interface ChatMessage {
@@ -43,6 +43,52 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Restore persistent messages from browser localStorage on mount
+  useEffect(() => {
+    try {
+      const savedMessages = localStorage.getItem('medisense_global_chat_messages');
+      if (savedMessages) {
+        const parsed = JSON.parse(savedMessages);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+        }
+      }
+
+      const savedDistId = localStorage.getItem('medisense_chat_district_id');
+      if (savedDistId) setDistrictId(Number(savedDistId));
+
+      const savedDistName = localStorage.getItem('medisense_chat_district_name');
+      if (savedDistName) setDistrictName(savedDistName);
+    } catch (err) {
+      console.error('Failed to restore chat history from localStorage:', err);
+    }
+  }, []);
+
+  // Sync messages & active district to browser localStorage
+  useEffect(() => {
+    try {
+      if (messages.length > 0) {
+        localStorage.setItem('medisense_global_chat_messages', JSON.stringify(messages));
+      } else {
+        localStorage.removeItem('medisense_global_chat_messages');
+      }
+
+      if (districtId) {
+        localStorage.setItem('medisense_chat_district_id', String(districtId));
+      } else {
+        localStorage.removeItem('medisense_chat_district_id');
+      }
+
+      if (districtName) {
+        localStorage.setItem('medisense_chat_district_name', districtName);
+      } else {
+        localStorage.removeItem('medisense_chat_district_name');
+      }
+    } catch (err) {
+      console.error('Failed to sync chat history to localStorage:', err);
+    }
+  }, [messages, districtId, districtName]);
+
   const openChat = useCallback(() => {
     setIsOpen(true);
   }, []);
@@ -55,6 +101,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setMessages([]);
     setDistrictId(null);
     setDistrictName(null);
+    try {
+      localStorage.removeItem('medisense_global_chat_messages');
+      localStorage.removeItem('medisense_chat_district_id');
+      localStorage.removeItem('medisense_chat_district_name');
+    } catch (err) {}
   }, []);
 
   const openChatForDistrict = useCallback(async (dId: number, dName: string) => {
@@ -71,13 +122,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       timestamp: now,
     };
 
-    setMessages([userMsg]);
+    setMessages(prev => [...prev, userMsg]);
 
     try {
+      const history = messages.map(m => ({ sender: m.sender, text: m.text }));
       const res = await chatApi.query({
         message: 'summary',
         districtId: dId,
-        history: [],
+        history,
       });
 
       const aiMsg: ChatMessage = {
@@ -88,7 +140,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         source: res.source,
       };
 
-      setMessages([userMsg, aiMsg]);
+      setMessages(prev => [...prev, aiMsg]);
     } catch (err) {
       console.error('Failed to get district summary from AI:', err);
       const errorMsg: ChatMessage = {
@@ -97,11 +149,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         text: `### 📍 District Summary: **${dName}**\n\n*Unable to fetch live AI response. Please verify backend connection.*`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
-      setMessages([userMsg, errorMsg]);
+      setMessages(prev => [...prev, errorMsg]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [messages]);
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim()) return;

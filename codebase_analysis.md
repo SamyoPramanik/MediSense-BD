@@ -84,8 +84,9 @@ The authentication pipeline supports user Registration, Login, and Role/Gender e
 ### B. Interactive District Map & Page-Wide AI Chatbot
 A global floating AI Assistant drawer (`GlobalAiChatbot.tsx`, `ChatContext.tsx`) is available on every page.
 *   **District Map Trigger**: Clicking any district marker on the interactive outbreak map (`ChoroplethMap.tsx`) opens the AI Chatbot drawer automatically, pre-loaded with an automated district text summary (diseases, predictions, hospital capacity, weather risks).
-*   **Interactive Q&A & Search**: Users can ask follow-up questions. The backend (`server/routes/chat.js`) checks for `OPENAI_API_KEY` (`gpt-4o-mini`) or falls back to an internal intelligent retrieval engine combining PostgreSQL database records and simulated web search citations.
-*   **Markdown Renderer (`FormattedMarkdown.tsx`)**: Formats headers (`###`), bold text (`**`), bullet points (`*`), numbered lists, badges, and dividers into rich styled UI elements.
+*   **Browser LocalStorage Persistence**: Chat message streams for both Global AI Chatbot and Female Care AI are automatically synchronized to browser `localStorage` (`medisense_global_chat_messages` & `medisense_female_care_messages`), preserving conversation history across page reloads and tab navigations. Includes user clear history controls.
+*   **Markdown & Table Renderer (`FormattedMarkdown.tsx`)**: Formats headers (`###`), bold text (`**`), bullet points (`*`), numbered lists, badges, and responsive HTML Tables (`<table>`) with hoverable rows.
+
 
 ### C. Dedicated Female Healthcare & Mental Support (`/female-care`)
 A dedicated section (`female-care/page.tsx` & `/api/chat/female-care`) offering confidential counselor guidance for women in Bangladesh.

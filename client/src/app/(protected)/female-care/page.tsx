@@ -38,9 +38,58 @@ How are you feeling today? You can choose a quick topic below or ask any questio
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Restore persistent female care messages from browser localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('medisense_female_care_messages');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load female care messages:', e);
+    }
+  }, []);
+
+  // Save female care messages to browser localStorage
+  useEffect(() => {
+    try {
+      if (messages.length > 0) {
+        localStorage.setItem('medisense_female_care_messages', JSON.stringify(messages));
+      }
+    } catch (e) {}
+  }, [messages]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+
+  const handleClearHistory = () => {
+    const defaultWelcome: Message = {
+      id: 'welcome',
+      sender: 'ai',
+      text: `### 🌸 Welcome to Nari Care AI (নারী কেয়ার)
+
+Hello! I am your personal health companion and confidential AI counselor. I am here to provide compassionate guidance on:
+
+* 🧠 **Mental Support & Stress Relief** (অপাংক্তেয় চাপ ও মানসিক প্রশান্তি)
+* 🌺 **Maternal & Reproductive Healthcare** (গর্ভকালীন ও প্রজনন স্বাস্থ্য)
+* 🥗 **Nutrition & Anemia Prevention** (পুষ্টি ও রক্তস্বল্পতা)
+* 🛡️ **Confidential Health Q&A**
+
+How are you feeling today? You can choose a quick topic below or ask any question freely.`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      source: 'Nari Care AI Guide',
+    };
+    setMessages([defaultWelcome]);
+    try {
+      localStorage.removeItem('medisense_female_care_messages');
+    } catch (e) {}
+  };
+
 
   const handleSend = async (textToSend?: string) => {
     const queryText = textToSend || input;
@@ -195,9 +244,22 @@ How are you feeling today? You can choose a quick topic below or ask any questio
               <p className="text-[11px] text-pink-300/80">Empathetic • Confidential • Medical Guidance</p>
             </div>
           </div>
-          <span className="text-xs px-3 py-1 rounded-full bg-pink-500/10 text-pink-300 border border-pink-500/20">
-            OpenAI & MediSense Engine
-          </span>
+          <div className="flex items-center gap-3">
+            {messages.length > 1 && (
+              <button
+                onClick={handleClearHistory}
+                className="px-2.5 py-1 rounded-lg bg-pink-500/10 text-pink-300 border border-pink-500/20 hover:bg-pink-500/20 text-xs transition-colors flex items-center gap-1.5"
+                title="Clear Chat History"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                <span>Clear History</span>
+              </button>
+            )}
+            <span className="text-xs px-3 py-1 rounded-full bg-pink-500/10 text-pink-300 border border-pink-500/20">
+              Groq & OpenAI Powered
+            </span>
+          </div>
+
         </div>
 
         {/* Message Stream */}
