@@ -29,13 +29,14 @@ graph TD
     *   **Framer Motion** for micro-animations and smooth drawer transitions.
     *   **Recharts** for time-series forecasting visualization.
     *   **React Leaflet** for geospatial map overlays (choropleths and routing).
-    *   **FormattedMarkdown**: Custom styled markdown rendering component for rich AI chatbot responses.
+    *   **FormattedMarkdown**: Custom styled markdown renderer converting headers (`###`), bold highlights, bullet/numbered lists, source badges, and full Markdown Tables (`<table>`) into responsive glassmorphic UI.
 *   **Express Backend (`server/`)**: A Node.js API acting as the central gatekeeper, managing:
     *   JWT-based user authentication, registration (Sign Up), gender metadata, and role-based route protection.
     *   Database connection pool management (`pg`).
-    *   AI Chat Router (`/api/chat/query` & `/api/chat/female-care`) interfacing with OpenAI or internal DB & web search index.
+    *   AI Chat Router (`/api/chat/query` & `/api/chat/female-care`) interfacing with Groq Cloud AI (`llama-3.3-70b-versatile`), OpenAI API, or internal DB & web search index.
     *   Inter-service communication with the FastAPI ML model.
     *   CSV bulk data import/export utilities.
+
 *   **ML Inference Service (`ai/`)**: A Python service powered by **FastAPI** and **Uvicorn**, housing:
     *   A **Random Forest Classifier** (`scikit-learn` and `joblib`) for predicting multi-disease outbreak probabilities.
     *   Fallback mock **BanglaBERT** and **LSTM** models for symptom triage and time-series forecasting.

@@ -18,7 +18,8 @@
 ### 3. 🤖 Page-Wide AI Chatbot Assistant
 * **Floating Assistant**: Accessible on every page via a floating glassmorphic launcher.
 * **Live Search & Database Retrieval**: Queries PostgreSQL database history and web search index citations to answer questions on local disease precautions, hospital bed availability, and treatment guidelines.
-* **Rich Markdown Formatting**: Features custom styled rendering (`FormattedMarkdown`) for headers, bold highlights, bullet points, badges, and numbered lists.
+* **Rich Markdown & Table Formatting**: Custom styled parser (`FormattedMarkdown`) rendering headers, bold text, bullet points, numbered lists, badges, and responsive HTML Tables (`<table>`) with hoverable rows.
+
 * **OpenAI & Groq Cloud AI Drop-In Ready**: Supports `GROQ_API_KEY` (`llama-3.3-70b-versatile`) for ultra-fast response generation, `OPENAI_API_KEY` (`gpt-4o-mini`), and built-in MediSense fallback engine.
 
 

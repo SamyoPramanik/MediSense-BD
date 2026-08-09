@@ -13,6 +13,7 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
   const accentColor = theme === 'pink' ? 'text-pink-300' : 'text-teal-300';
   const badgeBg = theme === 'pink' ? 'bg-pink-500/20 text-pink-300 border-pink-500/30' : 'bg-teal-500/20 text-teal-300 border-teal-500/30';
   const hrColor = theme === 'pink' ? 'border-pink-500/20' : 'border-teal-500/20';
+  const tableHeaderBg = theme === 'pink' ? 'rgba(236, 72, 153, 0.15)' : 'rgba(20, 184, 166, 0.15)';
 
   // Helper to parse inline formatting (**bold**, *italic*, badges)
   const parseInline = (text: string): React.ReactNode[] => {
@@ -64,6 +65,7 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
   const lines = content.split('\n');
   const elements: React.ReactNode[] = [];
   let listItems: React.ReactNode[] = [];
+  let tableLines: string[] = [];
 
   const flushList = () => {
     if (listItems.length > 0) {
@@ -76,8 +78,68 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
     }
   };
 
+  const flushTable = () => {
+    if (tableLines.length > 0) {
+      const parsedRows = tableLines.map(line => {
+        const cells = line.split('|').map(c => c.trim());
+        // Remove empty first/last elements if line started/ended with |
+        if (cells[0] === '') cells.shift();
+        if (cells[cells.length - 1] === '') cells.pop();
+        return cells;
+      });
+
+      // Header row is index 0
+      const headerCells = parsedRows[0] || [];
+      // Delimiter row index 1 check (e.g. contains '---')
+      const bodyRows = parsedRows.slice(1).filter(row => {
+        const joined = row.join('');
+        return !joined.match(/^[\s\-:]+$/); // filter out delimiter row
+      });
+
+      elements.push(
+        <div key={`table-${elements.length}`} className="my-3 overflow-x-auto rounded-xl border border-white/15 glass-card">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-white/20" style={{ background: tableHeaderBg }}>
+                {headerCells.map((h, colIdx) => (
+                  <th key={colIdx} className={`p-2.5 font-bold text-[11px] uppercase tracking-wider ${accentColor}`}>
+                    {parseInline(h)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/10">
+              {bodyRows.map((row, rowIdx) => (
+                <tr key={rowIdx} className="hover:bg-white/5 transition-colors">
+                  {row.map((cell, colIdx) => (
+                    <td key={colIdx} className="p-2.5 text-white/90 align-top leading-relaxed">
+                      {parseInline(cell)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+
+      tableLines = [];
+    }
+  };
+
   lines.forEach((line, index) => {
     const trimmed = line.trim();
+
+    // Check if table row (starts with | or contains multiple | columns)
+    const isTableRow = trimmed.startsWith('|') || (trimmed.match(/\|/g) || []).length >= 2;
+
+    if (isTableRow) {
+      flushList();
+      tableLines.push(trimmed);
+      return;
+    } else {
+      flushTable();
+    }
 
     if (!trimmed) {
       flushList();
@@ -166,6 +228,7 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
   });
 
   flushList();
+  flushTable();
 
   return <div className={`space-y-0.5 text-xs text-white/90 ${className}`}>{elements}</div>;
 }
