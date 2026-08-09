@@ -13,19 +13,32 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
   const accentColor = theme === 'pink' ? 'text-pink-300' : 'text-teal-300';
   const badgeBg = theme === 'pink' ? 'bg-pink-500/20 text-pink-300 border-pink-500/30' : 'bg-teal-500/20 text-teal-300 border-teal-500/30';
   const hrColor = theme === 'pink' ? 'border-pink-500/20' : 'border-teal-500/20';
-  const tableHeaderBg = theme === 'pink' ? 'rgba(236, 72, 153, 0.15)' : 'rgba(20, 184, 166, 0.15)';
+  const tableHeaderBg = theme === 'pink' ? 'rgba(236, 72, 153, 0.18)' : 'rgba(20, 184, 166, 0.18)';
 
   // Helper to parse inline formatting (**bold**, *italic*, badges)
   const parseInline = (text: string): React.ReactNode[] => {
+    if (!text) return [];
+
+    // Preprocess: close any unclosed ** or * tokens if line was truncated mid-sentence
+    let sanitized = text;
+    const doubleAsteriskCount = (sanitized.match(/\*\*/g) || []).length;
+    if (doubleAsteriskCount % 2 !== 0) {
+      sanitized += '**';
+    }
+    const singleAsteriskCount = (sanitized.replace(/\*\*/g, '').match(/\*/g) || []).length;
+    if (singleAsteriskCount % 2 !== 0) {
+      sanitized += '*';
+    }
+
     // Regex matching **bold**, *italic*, and [Source: ...] badges
     const regex = /(\*\*.*?\*\*|\*.*?\*|\[.*?\])/g;
-    const parts = text.split(regex);
+    const parts = sanitized.split(regex);
 
     return parts.map((part, idx) => {
       if (!part) return null;
 
       // Bold **text**
-      if (part.startsWith('**') && part.endsWith('**')) {
+      if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
         const inner = part.slice(2, -2);
         return (
           <strong key={idx} className="font-semibold text-white font-sans">
@@ -35,10 +48,10 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
       }
 
       // Italic *text*
-      if (part.startsWith('*') && part.endsWith('*') && !part.startsWith('**')) {
+      if (part.startsWith('*') && part.endsWith('*') && !part.startsWith('**') && part.length >= 2) {
         const inner = part.slice(1, -1);
         return (
-          <em key={idx} className="italic text-white/80">
+          <em key={idx} className="italic text-white/85">
             {inner}
           </em>
         );
@@ -80,11 +93,24 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
 
   const flushTable = () => {
     if (tableLines.length > 0) {
+      // A valid table MUST have at least 2 lines (header + separator or row)
+      if (tableLines.length < 2) {
+        tableLines.forEach((tLine, i) => {
+          elements.push(
+            <p key={`table-fallback-${elements.length}-${i}`} className="text-xs text-white/90 leading-relaxed my-1">
+              {parseInline(tLine)}
+            </p>
+          );
+        });
+        tableLines = [];
+        return;
+      }
+
       const parsedRows = tableLines.map(line => {
         const cells = line.split('|').map(c => c.trim());
         // Remove empty first/last elements if line started/ended with |
-        if (cells[0] === '') cells.shift();
-        if (cells[cells.length - 1] === '') cells.pop();
+        if (cells.length > 0 && cells[0] === '') cells.shift();
+        if (cells.length > 0 && cells[cells.length - 1] === '') cells.pop();
         return cells;
       });
 
@@ -96,32 +122,43 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
         return !joined.match(/^[\s\-:]+$/); // filter out delimiter row
       });
 
-      elements.push(
-        <div key={`table-${elements.length}`} className="my-3 overflow-x-auto rounded-xl border border-white/15 glass-card">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-white/20" style={{ background: tableHeaderBg }}>
-                {headerCells.map((h, colIdx) => (
-                  <th key={colIdx} className={`p-2.5 font-bold text-[11px] uppercase tracking-wider ${accentColor}`}>
-                    {parseInline(h)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/10">
-              {bodyRows.map((row, rowIdx) => (
-                <tr key={rowIdx} className="hover:bg-white/5 transition-colors">
-                  {row.map((cell, colIdx) => (
-                    <td key={colIdx} className="p-2.5 text-white/90 align-top leading-relaxed">
-                      {parseInline(cell)}
-                    </td>
+      if (headerCells.length > 0) {
+        elements.push(
+          <div key={`table-${elements.length}`} className="my-3 overflow-x-auto rounded-xl border border-white/15 glass-card shadow-lg">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-white/20" style={{ background: tableHeaderBg }}>
+                  {headerCells.map((h, colIdx) => (
+                    <th key={colIdx} className={`p-2.5 font-bold text-[11px] uppercase tracking-wider ${accentColor}`}>
+                      {parseInline(h)}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                {bodyRows.map((row, rowIdx) => (
+                  <tr key={rowIdx} className="hover:bg-white/5 transition-colors">
+                    {row.map((cell, colIdx) => (
+                      <td key={colIdx} className="p-2.5 text-white/90 align-top leading-relaxed">
+                        {parseInline(cell)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      } else {
+        // Fallback for malformed lines
+        tableLines.forEach((tLine, i) => {
+          elements.push(
+            <p key={`table-fallback-b-${elements.length}-${i}`} className="text-xs text-white/90 leading-relaxed my-1">
+              {parseInline(tLine)}
+            </p>
+          );
+        });
+      }
 
       tableLines = [];
     }
@@ -130,8 +167,8 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
   lines.forEach((line, index) => {
     const trimmed = line.trim();
 
-    // Check if table row (starts with | or contains multiple | columns)
-    const isTableRow = trimmed.startsWith('|') || (trimmed.match(/\|/g) || []).length >= 2;
+    // Check if line is a table row (starts with | or has | delimiters)
+    const isTableRow = trimmed.startsWith('|') || (trimmed.endsWith('|') && trimmed.includes('|')) || trimmed.includes('| ---');
 
     if (isTableRow) {
       flushList();

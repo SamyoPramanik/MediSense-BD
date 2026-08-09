@@ -22,6 +22,10 @@
 
 * **Browser LocalStorage Persistence**: Chat message history and active district context automatically persist across browser reloads, tab navigation, and user sessions, with trash-bin clear history controls.
 * **OpenAI & Groq Cloud AI Drop-In Ready**: Supports `GROQ_API_KEY` (`llama-3.3-70b-versatile`) for ultra-fast response generation, `OPENAI_API_KEY` (`gpt-4o-mini`), and built-in MediSense fallback engine.
+* **High-Capacity Non-Truncated Output**: Configured LLM token limits (`max_tokens: 8000`) and automatic syntax repair in `FormattedMarkdown` so long responses, multi-district tables, and medical recommendations complete cleanly without cutting off midway.
+* **Robust Off-Topic Guardrails**: System prompts across all chatbots strictly enforce domain boundaries, politely refusing unrelated topics (coding, sports, finance, entertainment) while directing users to medical & public health guidance.
+
+
 
 
 

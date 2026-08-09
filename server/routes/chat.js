@@ -132,12 +132,21 @@ router.post('/query', async (req, res) => {
       }
     }
 
-    // Prepare system prompt with DB context
-    const systemPrompt = `You are MediSense AI Assistant, an expert epidemiologist and healthcare guide for Bangladesh.
+    // Prepare system prompt with DB context and strict off-topic guardrails
+    const systemPrompt = `You are MediSense AI Assistant, an expert public health epidemiologist, healthcare guide, and disease intelligence system specialized EXCLUSIVELY in Bangladesh public health, epidemic forecasting, hospital navigation, disease precautions, and medical inquiries.
+
+CRITICAL INSTRUCTIONS & STRICT BOUNDARIES:
+1. SCOPE REQUIREMENT: You MUST ONLY answer questions related to healthcare, medical advice, disease outbreaks, epidemic forecasts, hospital beds, medicines, public health precautions, wellness, hygiene, or MediSense BD platform features.
+2. OFF-TOPIC STRICT REFUSAL RULE: If the user asks ANY question completely unrelated to healthcare, medicine, biology, public health, or MediSense (for example: programming/coding, sports, movie/celebrity trivia, finance, political debates, gaming, physics/math homework, or unrelated history):
+   - You MUST POLITELY DECLINE to answer the off-topic query.
+   - Do NOT provide code, sports answers, trivia, or off-topic solutions.
+   - State clearly and politely in 1-2 sentences: "I am MediSense AI, specialized exclusively in public health, disease intelligence, and medical guidance for Bangladesh. I cannot answer questions on off-topic subjects. Please feel free to ask any health, disease, or medical question!"
+3. BILINGUAL SUPPORT: Respond in English or Bengali matching the user's language.
+4. ACCURACY & FORMATTING: Provide structured, empathetic, and evidence-based guidance with markdown formatting (headers, bolding, bullet points, tables when comparing data).
+
 ${districtContext ? `Context for District ${districtContext.district.name} (${districtContext.district.name_bn || ''}), Division: ${districtContext.district.division}, Population: ${districtContext.district.population}:
 - Latest Outbreak Predictions: ${JSON.stringify(districtContext.predictions.slice(0, 3))}
-- Healthcare Capacity: ${districtContext.hospitals.count} emergency hospitals, ${districtContext.hospitals.availableBeds}/${districtContext.hospitals.totalBeds} available beds.` : ''}
-Provide accurate, concise, and helpful advice in bullet points or markdown format. Include references to DGDA/IEDCR standards where applicable.`;
+- Healthcare Capacity: ${districtContext.hospitals.count} emergency hospitals, ${districtContext.hospitals.availableBeds}/${districtContext.hospitals.totalBeds} available beds.` : ''}`;
 
     const llmResult = await queryLLM(systemPrompt, message || 'Provide summary', history);
     if (llmResult) {
@@ -148,9 +157,24 @@ Provide accurate, concise, and helpful advice in bullet points or markdown forma
       });
     }
 
+    // Off-topic filter for fallback generator
+    const queryLower = (message || '').toLowerCase();
+    const offTopicKeywords = ['code', 'python', 'javascript', 'programming', 'cricket', 'football', 'soccer', 'movie', 'actor', 'finance', 'bitcoin', 'crypto', 'stock', 'game', 'gaming', 'math', 'homework'];
+    const healthKeywords = ['health', 'disease', 'fever', 'hospital', 'doctor', 'medicine', 'dengue', 'cholera', 'malaria', 'covid', 'symptom', 'pregnancy', 'anemia', 'stress', 'triage', 'bed', 'clinic', 'summary', 'overview'];
+
+    const isOffTopic = offTopicKeywords.some(k => queryLower.includes(k)) && !healthKeywords.some(k => queryLower.includes(k));
+
+    if (isOffTopic) {
+      return res.json({
+        reply: `### 🛡️ Off-Topic Query Notice\n\nI am **MediSense AI**, specialized exclusively in public health, epidemic intelligence, disease precautions, and healthcare guidance for Bangladesh.\n\nI cannot assist with off-topic queries (such as programming, sports, finance, or entertainment). Please ask any health or medical question!`,
+        district: districtInfo,
+        source: 'MediSense Scope Filter',
+      });
+    }
+
     // Smart Fallback Generator (using Database & Web Search index)
     let reply = '';
-    const queryLower = (message || '').toLowerCase();
+
 
     if (districtContext) {
       const dName = districtContext.district.name;
@@ -245,9 +269,14 @@ router.post('/female-care', async (req, res) => {
   try {
     const { message, history = [] } = req.body;
 
-    const systemPrompt = `You are Nari Care AI (নারী কেয়ার), a compassionate, expert female health guide and mental health counselor in Bangladesh.
-You offer empathetic, confidential, and medically sound advice for women regarding mental health, maternal & reproductive health, nutrition (anemia prevention), workplace stress, and emotional well-being.
-Use warm, respectful language in English (or Bengali terms where helpful). Keep answers clear and supportive.`;
+    const systemPrompt = `You are Nari Care AI (নারী কেয়ার), a compassionate, highly specialized female healthcare guide and confidential mental health counselor for women in Bangladesh.
+
+CRITICAL INSTRUCTIONS & STRICT BOUNDARIES:
+1. SCOPE REQUIREMENT: You MUST ONLY assist with topics related to female health, maternal & reproductive healthcare, mental health, emotional well-being, stress relief, nutrition/anemia, women's hygiene, and general healthcare.
+2. OFF-TOPIC STRICT REFUSAL RULE: If the user asks questions completely unrelated to women's health, mental well-being, medicine, or wellness (such as coding, general software development, sports, financial markets, automotive, or unrelated trivia):
+   - You MUST POLITELY DECLINE to answer.
+   - Respond warmly and respectfully in 1-2 sentences: "As Nari Care AI, I am dedicated specifically to women's health, mental well-being, and medical guidance. I cannot answer queries regarding off-topic subjects. Please feel free to share any health concerns or emotional feelings with me!"
+3. TONE & FORMATTING: Use warm, empathetic, respectful, and confidential tone in English or Bengali as appropriate. Use markdown formatting with bullet points and clear headings.`;
 
     const llmResult = await queryLLM(systemPrompt, message || 'Hello', history);
     if (llmResult) {
@@ -257,9 +286,23 @@ Use warm, respectful language in English (or Bengali terms where helpful). Keep 
       });
     }
 
-    // Smart Fallback Engine for Female Care
+    // Off-topic filter for female care fallback generator
     const q = (message || '').toLowerCase();
+    const offTopicKeywords = ['code', 'python', 'javascript', 'programming', 'cricket', 'football', 'soccer', 'movie', 'actor', 'finance', 'bitcoin', 'crypto', 'stock', 'game', 'gaming', 'math', 'homework'];
+    const femaleCareKeywords = ['health', 'mental', 'stress', 'anxiety', 'depress', 'sad', 'overwhelm', 'baby', 'maternal', 'pregnancy', 'period', 'cycle', 'nutrition', 'anemia', 'iron', 'counselor', 'nari', 'care'];
+
+    const isOffTopic = offTopicKeywords.some(k => q.includes(k)) && !femaleCareKeywords.some(k => q.includes(k));
+
+    if (isOffTopic) {
+      return res.json({
+        reply: `### 🌸 Nari Care AI Scope Notice\n\nHello! As **Nari Care AI**, I am dedicated specifically to supporting women's health, maternal care, mental well-being, and confidential guidance.\n\nI am unable to answer off-topic questions (such as programming, sports, finance, or entertainment). Please feel free to share any health concern or how you are feeling today!`,
+        source: 'Nari Care Scope Filter',
+      });
+    }
+
+    // Smart Fallback Engine for Female Care
     let reply = '';
+
 
     if (q.includes('mental') || q.includes('stress') || q.includes('anxiety') || q.includes('depress') || q.includes('sad') || q.includes('overwhelm')) {
       reply = `### 🌸 Mental Support & Emotional Well-Being (মানসিক স্বাস্থ্য)
