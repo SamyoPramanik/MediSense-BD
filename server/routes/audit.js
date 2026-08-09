@@ -5,10 +5,16 @@ const router = express.Router();
 const { logFilePath } = require('../middleware/auditLogger');
 const { authMiddleware, requireRole } = require('../middleware/auth');
 
-// POST /api/audit/page-view — Track frontend page visits by users or anonymous visitors
 router.post('/page-view', (req, res) => {
   const { path: pagePath, title, referrer } = req.body;
+
+  // Do not log visits to the audit page itself to avoid noise
+  if (pagePath && pagePath.startsWith('/audit')) {
+    return res.json({ status: 'ok', logged: false, reason: 'audit page ignored' });
+  }
+
   const timestamp = new Date().toISOString();
+
 
   let userObj = null;
   let userSummary = 'Anonymous Visitor';

@@ -35,7 +35,14 @@ function sanitizePayload(obj) {
 let entryCounter = Date.now();
 
 function auditLoggerMiddleware(req, res, next) {
+  const urlPath = req.originalUrl || req.url;
+  // Do not log requests to the audit endpoint itself
+  if (urlPath.startsWith('/api/audit')) {
+    return next();
+  }
+
   const start = Date.now();
+
 
   let extractedUser = null;
   const authHeader = req.headers.authorization;
@@ -66,9 +73,14 @@ function auditLoggerMiddleware(req, res, next) {
     const timestamp = new Date().toISOString();
     const entryId = `${Date.now()}-${++entryCounter}`;
 
-    let payload = null;
+    let requestPayload = null;
     if (req.body && Object.keys(req.body).length > 0) {
-      payload = sanitizePayload(req.body);
+      requestPayload = sanitizePayload(req.body);
+    }
+
+    let responsePayload = null;
+    if (responseBody) {
+      responsePayload = sanitizePayload(responseBody);
     }
 
     let errorDetail = null;
@@ -88,9 +100,12 @@ function auditLoggerMiddleware(req, res, next) {
       userSummary,
       ip,
       userAgent,
-      payload,
+      requestPayload,
+      responsePayload,
+      payload: requestPayload, // Legacy alias
       error: errorDetail,
     };
+
 
     fs.appendFile(logFilePath, JSON.stringify(logRecord) + '\n', (err) => {
       if (err) console.error('[Audit Logger Error] Failed to write log:', err);
