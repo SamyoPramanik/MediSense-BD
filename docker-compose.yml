@@ -37,6 +37,7 @@ services:
       - DB_URL=postgresql://admin:password@database:5432/medisense
       - JWT_SECRET=medisense-secret-key-2026
       - PORT=3000
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       database:
         condition: service_healthy

@@ -1,7 +1,9 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FormattedMarkdown from '@/components/ui/FormattedMarkdown';
 import { useChat } from './ChatContext';
+
 
 export default function GlobalAiChatbot() {
   const { isOpen, districtName, messages, loading, openChat, closeChat, sendMessage, clearChat } = useChat();
@@ -139,14 +141,15 @@ export default function GlobalAiChatbot() {
                     className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
                   >
                     <div
-                      className={`max-w-[88%] p-3 rounded-2xl leading-relaxed whitespace-pre-wrap ${
+                      className={`max-w-[88%] p-3 rounded-2xl leading-relaxed ${
                         msg.sender === 'user'
                           ? 'bg-teal-600 text-white rounded-br-none shadow-md'
                           : 'glass-card border border-white/10 text-white/90 rounded-bl-none'
                       }`}
                     >
-                      {msg.text}
+                      <FormattedMarkdown content={msg.text} theme="teal" />
                     </div>
+
                     <div className="flex items-center gap-2 mt-1 px-1">
                       <span className="text-[10px] text-white/30">{msg.timestamp}</span>
                       {msg.source && (

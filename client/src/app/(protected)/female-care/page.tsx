@@ -2,7 +2,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import GlassCard from '@/components/ui/GlassCard';
+import FormattedMarkdown from '@/components/ui/FormattedMarkdown';
 import { chatApi } from '@/lib/api';
+
 
 interface Message {
   id: string;
@@ -206,14 +208,15 @@ How are you feeling today? You can choose a quick topic below or ask any questio
               className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
             >
               <div
-                className={`max-w-[85%] p-4 rounded-2xl leading-relaxed whitespace-pre-wrap ${
+                className={`max-w-[85%] p-4 rounded-2xl leading-relaxed ${
                   msg.sender === 'user'
                     ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white rounded-br-none shadow-md'
                     : 'glass-card border border-white/10 text-white/90 rounded-bl-none'
                 }`}
               >
-                {msg.text}
+                <FormattedMarkdown content={msg.text} theme="pink" />
               </div>
+
               <div className="flex items-center gap-2 mt-1 px-1">
                 <span className="text-[10px] text-white/30">{msg.timestamp}</span>
                 {msg.source && <span className="text-[9px] text-pink-400 font-mono">{msg.source}</span>}
