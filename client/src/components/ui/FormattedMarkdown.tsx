@@ -14,58 +14,77 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
   const badgeBg = theme === 'pink' ? 'bg-pink-500/20 text-pink-300 border-pink-500/30' : 'bg-teal-500/20 text-teal-300 border-teal-500/30';
   const hrColor = theme === 'pink' ? 'border-pink-500/20' : 'border-teal-500/20';
   const tableHeaderBg = theme === 'pink' ? 'rgba(236, 72, 153, 0.18)' : 'rgba(20, 184, 166, 0.18)';
+  const bulletBg = theme === 'pink' ? 'bg-pink-400' : 'bg-teal-400';
 
-  // Helper to parse inline formatting (**bold**, *italic*, badges)
+  // Inline syntax parser: **bold**, *italic*, `code`, [label](url), [BadgeText]
   const parseInline = (text: string): React.ReactNode[] => {
     if (!text) return [];
 
-    // Preprocess: close any unclosed ** or * tokens if line was truncated mid-sentence
+    // Preprocess: auto-repair unclosed asterisks if truncated
     let sanitized = text;
     const doubleAsteriskCount = (sanitized.match(/\*\*/g) || []).length;
-    if (doubleAsteriskCount % 2 !== 0) {
-      sanitized += '**';
-    }
+    if (doubleAsteriskCount % 2 !== 0) sanitized += '**';
     const singleAsteriskCount = (sanitized.replace(/\*\*/g, '').match(/\*/g) || []).length;
-    if (singleAsteriskCount % 2 !== 0) {
-      sanitized += '*';
-    }
+    if (singleAsteriskCount % 2 !== 0) sanitized += '*';
 
-    // Regex matching **bold**, *italic*, and [Source: ...] badges
-    const regex = /(\*\*.*?\*\*|\*.*?\*|\[.*?\])/g;
+    // Regex matching: [link](url), `code`, **bold**, *italic*, [badge]
+    const regex = /(\[.*?\]\(https?:\/\/.*?\)|\`.*?\`|\*\*.*?\*\*|\*.*?\*|\[.*?\])/g;
     const parts = sanitized.split(regex);
 
     return parts.map((part, idx) => {
       if (!part) return null;
 
+      // Markdown Link: [Text](https://url)
+      const linkMatch = part.match(/^\[(.*?)\]\((https?:\/\/.*?)\)$/);
+      if (linkMatch) {
+        return (
+          <a
+            key={idx}
+            href={linkMatch[2]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`font-semibold underline underline-offset-2 hover:opacity-80 transition-opacity ${accentColor}`}
+          >
+            {linkMatch[1]}
+          </a>
+        );
+      }
+
+      // Inline Code: `code`
+      if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
+        return (
+          <code key={idx} className="px-1.5 py-0.5 rounded-md bg-white/10 font-mono text-[11px] text-teal-200 border border-white/10">
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+
       // Bold **text**
       if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
-        const inner = part.slice(2, -2);
         return (
-          <strong key={idx} className="font-semibold text-white font-sans">
-            {inner}
+          <strong key={idx} className="font-semibold text-white">
+            {part.slice(2, -2)}
           </strong>
         );
       }
 
       // Italic *text*
       if (part.startsWith('*') && part.endsWith('*') && !part.startsWith('**') && part.length >= 2) {
-        const inner = part.slice(1, -1);
         return (
           <em key={idx} className="italic text-white/85">
-            {inner}
+            {part.slice(1, -1)}
           </em>
         );
       }
 
-      // Badge / Chip [Source: ...] or [Text]
+      // Badge / Chip [Source: ...] or [Badge]
       if (part.startsWith('[') && part.endsWith(']')) {
-        const inner = part.slice(1, -1);
         return (
           <span
             key={idx}
             className={`inline-block text-[10px] px-2 py-0.5 mx-0.5 rounded-full border font-mono ${badgeBg}`}
           >
-            {inner}
+            {part.slice(1, -1)}
           </span>
         );
       }
@@ -74,11 +93,14 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
     });
   };
 
-  // Split lines and process block elements
+  // Process block lines
   const lines = content.split('\n');
   const elements: React.ReactNode[] = [];
   let listItems: React.ReactNode[] = [];
   let tableLines: string[] = [];
+  let codeBlockLines: string[] = [];
+  let inCodeBlock = false;
+  let codeLang = '';
 
   const flushList = () => {
     if (listItems.length > 0) {
@@ -93,7 +115,6 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
 
   const flushTable = () => {
     if (tableLines.length > 0) {
-      // A valid table MUST have at least 2 lines (header + separator or row)
       if (tableLines.length < 2) {
         tableLines.forEach((tLine, i) => {
           elements.push(
@@ -108,15 +129,12 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
 
       const parsedRows = tableLines.map(line => {
         const cells = line.split('|').map(c => c.trim());
-        // Remove empty first/last elements if line started/ended with |
         if (cells.length > 0 && cells[0] === '') cells.shift();
         if (cells.length > 0 && cells[cells.length - 1] === '') cells.pop();
         return cells;
       });
 
-      // Header row is index 0
       const headerCells = parsedRows[0] || [];
-      // Delimiter row index 1 check (e.g. contains '---')
       const bodyRows = parsedRows.slice(1).filter(row => {
         const joined = row.join('');
         return !joined.match(/^[\s\-:]+$/); // filter out delimiter row
@@ -150,7 +168,6 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
           </div>
         );
       } else {
-        // Fallback for malformed lines
         tableLines.forEach((tLine, i) => {
           elements.push(
             <p key={`table-fallback-b-${elements.length}-${i}`} className="text-xs text-white/90 leading-relaxed my-1">
@@ -159,7 +176,6 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
           );
         });
       }
-
       tableLines = [];
     }
   };
@@ -167,9 +183,42 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
   lines.forEach((line, index) => {
     const trimmed = line.trim();
 
-    // Check if line is a table row (starts with | or has | delimiters)
-    const isTableRow = trimmed.startsWith('|') || (trimmed.endsWith('|') && trimmed.includes('|')) || trimmed.includes('| ---');
+    // Code Block Toggle ```lang
+    if (trimmed.startsWith('```')) {
+      if (inCodeBlock) {
+        // End Code Block
+        elements.push(
+          <div key={`code-${elements.length}`} className="my-3 rounded-xl bg-slate-950 border border-white/15 overflow-hidden">
+            {codeLang && (
+              <div className="px-3 py-1 border-b border-white/10 text-[10px] font-mono text-teal-400 bg-white/5">
+                {codeLang}
+              </div>
+            )}
+            <pre className="p-3 font-mono text-[11px] text-teal-200 overflow-x-auto leading-relaxed">
+              {codeBlockLines.join('\n')}
+            </pre>
+          </div>
+        );
+        codeBlockLines = [];
+        inCodeBlock = false;
+        codeLang = '';
+      } else {
+        // Start Code Block
+        flushList();
+        flushTable();
+        inCodeBlock = true;
+        codeLang = trimmed.slice(3).trim();
+      }
+      return;
+    }
 
+    if (inCodeBlock) {
+      codeBlockLines.push(line);
+      return;
+    }
+
+    // Check Table Row
+    const isTableRow = trimmed.startsWith('|') || (trimmed.endsWith('|') && trimmed.includes('|')) || trimmed.includes('| ---');
     if (isTableRow) {
       flushList();
       tableLines.push(trimmed);
@@ -178,61 +227,79 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
       flushTable();
     }
 
+    // Blank line
     if (!trimmed) {
       flushList();
       elements.push(<div key={`blank-${index}`} className="h-1.5" />);
       return;
     }
 
-    // Horizontal Rule ---
-    if (trimmed === '---' || trimmed === '***') {
+    // Horizontal Rule ---, ***, ___
+    if (trimmed === '---' || trimmed === '***' || trimmed === '___') {
       flushList();
       elements.push(<hr key={`hr-${index}`} className={`my-3 border-t ${hrColor}`} />);
       return;
     }
 
-    // Headers: ### Header
-    if (trimmed.startsWith('### ')) {
+    // Blockquote: > text
+    if (trimmed.startsWith('> ')) {
       flushList();
-      const title = trimmed.replace(/^###\s+/, '');
+      const quoteText = trimmed.slice(2);
       elements.push(
-        <h3 key={`h3-${index}`} className={`text-sm font-bold mt-3 mb-1.5 flex items-center gap-1.5 ${accentColor}`} style={{ fontFamily: 'Outfit, sans-serif' }}>
-          {parseInline(title)}
-        </h3>
+        <blockquote key={`quote-${index}`} className="border-l-2 border-teal-400/60 pl-3 py-1 my-2 bg-teal-500/5 text-white/80 italic rounded-r-lg">
+          {parseInline(quoteText)}
+        </blockquote>
       );
       return;
     }
 
-    // Headers: ## Header
-    if (trimmed.startsWith('## ')) {
+    // All Headings: # through ######
+    const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)/);
+    if (headingMatch) {
       flushList();
-      const title = trimmed.replace(/^##\s+/, '');
-      elements.push(
-        <h2 key={`h2-${index}`} className={`text-base font-bold mt-3 mb-2 flex items-center gap-2 ${accentColor}`} style={{ fontFamily: 'Outfit, sans-serif' }}>
-          {parseInline(title)}
-        </h2>
-      );
+      const level = headingMatch[1].length;
+      const title = headingMatch[2];
+
+      if (level === 1) {
+        elements.push(
+          <h1 key={`h1-${index}`} className={`text-lg font-extrabold mt-4 mb-2 ${accentColor}`} style={{ fontFamily: 'Outfit, sans-serif' }}>
+            {parseInline(title)}
+          </h1>
+        );
+      } else if (level === 2) {
+        elements.push(
+          <h2 key={`h2-${index}`} className={`text-base font-bold mt-3.5 mb-2 ${accentColor}`} style={{ fontFamily: 'Outfit, sans-serif' }}>
+            {parseInline(title)}
+          </h2>
+        );
+      } else if (level === 3) {
+        elements.push(
+          <h3 key={`h3-${index}`} className={`text-sm font-bold mt-3 mb-1.5 ${accentColor}`} style={{ fontFamily: 'Outfit, sans-serif' }}>
+            {parseInline(title)}
+          </h3>
+        );
+      } else if (level === 4) {
+        elements.push(
+          <h4 key={`h4-${index}`} className={`text-xs font-bold mt-2.5 mb-1.5 tracking-wide ${accentColor}`} style={{ fontFamily: 'Outfit, sans-serif' }}>
+            {parseInline(title)}
+          </h4>
+        );
+      } else {
+        elements.push(
+          <h5 key={`h5-${index}`} className={`text-xs font-semibold mt-2 mb-1 ${accentColor}`}>
+            {parseInline(title)}
+          </h5>
+        );
+      }
       return;
     }
 
-    // Headers: # Header
-    if (trimmed.startsWith('# ')) {
-      flushList();
-      const title = trimmed.replace(/^#\s+/, '');
-      elements.push(
-        <h1 key={`h1-${index}`} className={`text-lg font-extrabold mt-4 mb-2 ${accentColor}`} style={{ fontFamily: 'Outfit, sans-serif' }}>
-          {parseInline(title)}
-        </h1>
-      );
-      return;
-    }
-
-    // Bullet points: * Item or - Item
-    if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
-      const itemText = trimmed.replace(/^[*|-]\s+/, '');
+    // Bullet points: * Item, - Item, + Item
+    if (trimmed.startsWith('* ') || trimmed.startsWith('- ') || trimmed.startsWith('+ ')) {
+      const itemText = trimmed.replace(/^[*|-|+]\s+/, '');
       listItems.push(
         <li key={`li-${index}`} className="flex items-start gap-2 text-white/90 text-xs leading-relaxed">
-          <span className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${theme === 'pink' ? 'bg-pink-400' : 'bg-teal-400'}`} />
+          <span className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${bulletBg}`} />
           <span className="flex-1">{parseInline(itemText)}</span>
         </li>
       );

@@ -18,12 +18,19 @@
 ### 3. 🤖 Page-Wide AI Chatbot Assistant
 * **Floating Assistant**: Accessible on every page via a floating glassmorphic launcher.
 * **Live Search & Database Retrieval**: Queries PostgreSQL database history and web search index citations to answer questions on local disease precautions, hospital bed availability, and treatment guidelines.
-* **Rich Markdown & Table Formatting**: Custom styled parser (`FormattedMarkdown`) rendering headers, bold text, bullet points, numbered lists, badges, and responsive HTML Tables (`<table>`) with hoverable rows.
-
+* **Universal Markdown & Table Formatting**: Custom styled parser (`FormattedMarkdown`) rendering headers (H1 through H6, including `####` subheadings), bold text, italic, inline code, fenced code blocks, blockquotes, bullet points, numbered lists, badges, links (`[text](url)`), and responsive HTML Tables (`<table>`) with hoverable rows.
 * **User-Isolated LocalStorage Persistence**: Chat message history and active district context are dynamically scoped to the logged-in user ID (`medisense_chat_messages_u${user.id}`). Different users logging into the same browser cannot access or view another user's chat history.
 * **OpenAI & Groq Cloud AI Drop-In Ready**: Supports `GROQ_API_KEY` (`llama-3.3-70b-versatile`) for ultra-fast response generation, `OPENAI_API_KEY` (`gpt-4o-mini`), and built-in MediSense fallback engine.
 * **High-Capacity Non-Truncated Output**: Configured LLM token limits (`max_tokens: 8000`) and automatic syntax repair in `FormattedMarkdown` so long responses, multi-district tables, and medical recommendations complete cleanly without cutting off midway.
 * **Robust Off-Topic Guardrails**: System prompts across all chatbots strictly enforce domain boundaries, politely refusing unrelated topics (coding, sports, finance, entertainment) while directing users to medical & public health guidance.
+
+
+### 10. 👨‍💻 Developer Credits & Contact
+* **Planned and Developed by**: [Samyo Pramanik](https://github.com/SamyoPramanik)
+* **GitHub Logo Link**: [https://github.com/SamyoPramanik](https://github.com/SamyoPramanik)
+* **Project Source Code**: [MediSense-BD Repository](https://github.com/SamyoPramanik/MediSense-BD)
+* **Contact Email**: [samyopramanik2003@gmail.com](mailto:samyopramanik2003@gmail.com)
+
 
 
 
