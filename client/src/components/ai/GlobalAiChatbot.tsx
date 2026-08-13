@@ -187,23 +187,32 @@ export default function GlobalAiChatbot() {
             </div>
 
             {/* Input Form */}
-            <form onSubmit={handleSend} className="p-3 border-t flex items-center gap-2" style={{ background: 'rgba(10, 46, 46, 0.95)', borderColor: 'rgba(255,255,255,0.08)' }}>
-              <input
-                type="text"
+            <form onSubmit={handleSend} className="p-3 border-t flex items-end gap-2" style={{ background: 'rgba(10, 46, 46, 0.95)', borderColor: 'rgba(255,255,255,0.08)' }}>
+              <textarea
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!loading && inputText.trim()) {
+                      handleSend(e);
+                    }
+                  }
+                }}
+                rows={1}
                 placeholder={districtName ? `Ask about ${districtName} dataset or precautions...` : 'Ask AI about health datasets, diseases...'}
-                className="glass-input flex-1 py-2 text-xs"
+                className="glass-input flex-1 py-2 text-xs resize-none max-h-24 custom-scrollbar"
               />
               <button
                 type="submit"
                 disabled={loading || !inputText.trim()}
-                className="p-2 rounded-xl text-white disabled:opacity-40 transition-all flex-shrink-0"
+                className="p-2.5 rounded-xl text-white disabled:opacity-40 transition-all flex-shrink-0 mb-0.5"
                 style={{ background: 'linear-gradient(135deg, #14b8a6, #0d9488)' }}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
               </button>
             </form>
+
           </motion.div>
         )}
       </AnimatePresence>

@@ -11,13 +11,13 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
   if (!content) return null;
 
   const accentColor = theme === 'pink' ? 'text-pink-300' : 'text-teal-300';
-  const boldColor = theme === 'pink' ? 'text-pink-200 font-extrabold' : 'text-teal-200 font-extrabold';
+  const boldTextColor = theme === 'pink' ? 'text-pink-200 font-extrabold' : 'text-amber-200 font-extrabold';
   const badgeBg = theme === 'pink' ? 'bg-pink-500/20 text-pink-300 border-pink-500/30' : 'bg-teal-500/20 text-teal-300 border-teal-500/30';
   const hrColor = theme === 'pink' ? 'border-pink-500/30' : 'border-teal-500/30';
   const tableHeaderBg = theme === 'pink' ? 'rgba(236, 72, 153, 0.18)' : 'rgba(20, 184, 166, 0.18)';
   const bulletBg = theme === 'pink' ? 'bg-pink-400' : 'bg-teal-400';
 
-  // Cross-browser lookbehind-free inline syntax parser: **bold**, __bold__, *italic*, _italic_, ***bold-italic***, ~~strikethrough~~, `code`, [label](url), [BadgeText]
+  // Inline syntax parser (NO ITALICS - ALL ASTERISK/UNDERSCORE WRAPPERS MAP STRICTLY TO BOLD)
   const parseInline = (text: string): React.ReactNode[] => {
     if (!text) return [];
 
@@ -33,8 +33,8 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
     const singleAsterisks = (sanitized.replace(/\*\*/g, '').match(/\*/g) || []).length;
     if (singleAsterisks % 2 !== 0) sanitized += '*';
 
-    // Regex matching: [link](url), `code`, ~~strikethrough~~, ***bold-italic***, **bold**, *italic*, [badge]
-    const regex = /(\[.*?\]\(https?:\/\/.*?\)|\`[^\`]+\`|~~[^~]+~~|\*\*\*[\s\S]+?\*\*\*|___[\s\S]+?___|\*\*[\s\S]+?\*\*|__[\s\S]+?__|(?:\b|_)\*[^\*]+?\*(?:\b|_)|(?:\b|\*)_[^_]+?_(?:\b|\*)|\[[^\]]+\])/g;
+    // Regex matching: [link](url), `code`, ~~strikethrough~~, asterisks/underscores for BOLD, [badge]
+    const regex = /(\[.*?\]\(https?:\/\/.*?\)|\`[^\`]+\`|~~[^~]+~~|\*{1,3}[\s\S]+?\*{1,3}|_{1,3}[\s\S]+?_{1,3}|\[[^\]]+\])/g;
 
     const parts = sanitized.split(regex);
 
@@ -75,33 +75,21 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
         );
       }
 
-      // Bold-Italic: ***text*** or ___text___
-      if ((part.startsWith('***') && part.endsWith('***') && part.length >= 6) ||
-          (part.startsWith('___') && part.endsWith('___') && part.length >= 6)) {
-        return (
-          <strong key={idx} className={`font-extrabold italic text-white ${boldColor} break-words`}>
-            {parseInline(part.slice(3, -3))}
-          </strong>
-        );
-      }
+      // BOLD ONLY: Any *, **, ***, _, __, ___ wrapped text renders as ULTRA BOLD (No Italics)
+      const isAsteriskBold = (part.startsWith('*') && part.endsWith('*') && part.length >= 2);
+      const isUnderscoreBold = (part.startsWith('_') && part.endsWith('_') && part.length >= 2);
 
-      // Bold: **text** or __text__
-      if ((part.startsWith('**') && part.endsWith('**') && part.length >= 4) ||
-          (part.startsWith('__') && part.endsWith('__') && part.length >= 4)) {
+      if (isAsteriskBold || isUnderscoreBold) {
+        // Strip outer *, **, *** or _, __, ___
+        const innerText = part.replace(/^(\*{1,3}|_{1,3})/, '').replace(/(\*{1,3}|_{1,3})$/, '');
         return (
-          <strong key={idx} className={`font-extrabold text-white ${boldColor} break-words`}>
-            {parseInline(part.slice(2, -2))}
+          <strong
+            key={idx}
+            className={`font-extrabold ${boldTextColor} break-words`}
+            style={{ fontWeight: 800 }}
+          >
+            {parseInline(innerText)}
           </strong>
-        );
-      }
-
-      // Italic: *text* or _text_
-      if ((part.startsWith('*') && part.endsWith('*') && !part.startsWith('**') && part.length >= 2) ||
-          (part.startsWith('_') && part.endsWith('_') && !part.startsWith('__') && part.length >= 2)) {
-        return (
-          <em key={idx} className="italic text-white/90 font-medium break-words">
-            {parseInline(part.slice(1, -1))}
-          </em>
         );
       }
 
@@ -285,7 +273,7 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
       flushList();
       const quoteText = trimmed.slice(2);
       elements.push(
-        <blockquote key={`quote-${index}`} className="border-l-2 border-teal-400/60 pl-3 py-1 my-2 bg-teal-500/5 text-white/80 italic rounded-r-lg break-words">
+        <blockquote key={`quote-${index}`} className="border-l-2 border-teal-400/60 pl-3 py-1 my-2 bg-teal-500/5 text-white/80 rounded-r-lg break-words">
           {parseInline(quoteText)}
         </blockquote>
       );

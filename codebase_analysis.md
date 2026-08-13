@@ -125,7 +125,10 @@ Detects GPS coordinates (`navigator.geolocation`) and queries `/api/navigate/nea
 
 *   **Bengali Symptom Triage (`TriageChat.tsx` & `server/routes/verify.js`)**: Evaluates Bengali symptom queries (e.g., `'শ্বাসকষ্ট'`, `'জ্বর'`) to classify triage severity (`low`, `moderate`, `critical`). Powered by BanglaBERT keyword matching combined with Groq Cloud AI / OpenAI LLM recommendations, styled markdown rendering (`FormattedMarkdown`), fixed compact height (`h-[520px] max-h-[520px]`), smooth custom scrollbar, and browser `localStorage` conversation persistence (`medisense_triage_chat_messages`).
 *   **Admin-Only Activity Audit Logging (`auditLogger.js`, `audit.js`, `ActivityTracker.tsx`)**: Records every HTTP request, response status, execution latency, request payload, response payload, client IP, User-Agent, user credentials, and page visits into `server/logs/activity_audit.log`. Strictly restricted to Administrator accounts (`role === 'admin'`). Requests to `/api/audit/*` and visits to `/audit` are automatically bypassed to prevent log feedback loops.
-*   **Universal Markdown & Table Parser (`FormattedMarkdown.tsx`)**: Supports all heading levels H1 (`#`) through H6 (`######`), Setext headers (`==`/`--`), recursive inline formatting for Bold (`**text**` and `__text__` styled with high-contrast `font-extrabold text-teal-200`), Italic (`*text*` and `_text_`), Bold-Italic (`***text***` and `___text___`), Strikethrough (`~~text~~`), inline code (`` `code` ``), links (`[text](url)`), badges (`[Badge]`), and responsive HTML tables. Powered by a 100% cross-browser lookbehind-free tokenizer with auto-repair for truncated AI responses.
+*   **Universal Markdown & Table Parser (`FormattedMarkdown.tsx`)**: Enforces BOLD-ONLY rendering (`style={{ fontWeight: 800 }}`) for all asterisk/underscore delimiters (`*`, `**`, `***`, `_`, `__`, `___`), eliminating italic tags. Supports H1 (`#`) through H6 (`######`), Setext headers (`==`/`--`), strikethrough (`~~text~~`), code, links, badges, and responsive tables.
+*   **Multiline Chatbot Input & Shift+Enter Newlines (`GlobalAiChatbot.tsx`, `female-care/page.tsx`)**: Replaced standard single-line input boxes with auto-expanding textareas. `Shift + Enter` inserts newlines without submitting, while `Enter` alone sends the prompt.
+
+
 
 
 

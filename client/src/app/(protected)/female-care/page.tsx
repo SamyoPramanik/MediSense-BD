@@ -310,26 +310,35 @@ How are you feeling today? You can choose a quick topic below or ask any questio
             e.preventDefault();
             handleSend();
           }}
-          className="p-4 border-t flex items-center gap-3"
+          className="p-4 border-t flex items-end gap-3"
           style={{ background: 'rgba(15, 23, 42, 0.8)', borderColor: 'rgba(255,255,255,0.08)' }}
         >
-          <input
-            type="text"
+          <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!loading && input.trim()) {
+                  handleSend();
+                }
+              }
+            }}
+            rows={1}
             placeholder="Type your question or express how you feel..."
-            className="glass-input flex-1 py-3 px-4 text-xs"
+            className="glass-input flex-1 py-3 px-4 text-xs resize-none max-h-32 custom-scrollbar"
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="px-5 py-3 rounded-xl text-white font-semibold text-xs disabled:opacity-40 transition-all flex items-center gap-2"
+            className="px-5 py-3 rounded-xl text-white font-semibold text-xs disabled:opacity-40 transition-all flex items-center gap-2 mb-0.5"
             style={{ background: 'linear-gradient(135deg, #ec4899, #db2777)' }}
           >
             <span>Ask Counselor</span>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
           </button>
         </form>
+
       </motion.div>
     </div>
   );
