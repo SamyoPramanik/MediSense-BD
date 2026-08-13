@@ -28,11 +28,11 @@
 * **Robust Off-Topic Guardrails**: System prompts across all chatbots strictly enforce domain boundaries, politely refusing unrelated topics (coding, sports, finance, entertainment) while directing users to medical & public health guidance.
 
 
-### 10. 👨‍💻 Developer Credits & Contact
-* **Planned and Developed by**: [Samyo Pramanik](https://github.com/SamyoPramanik)
-* **GitHub Logo Link**: [https://github.com/SamyoPramanik](https://github.com/SamyoPramanik)
-* **Project Source Code**: [MediSense-BD Repository](https://github.com/SamyoPramanik/MediSense-BD)
-* **Contact Email**: [samyopramanik2003@gmail.com](mailto:samyopramanik2003@gmail.com)
+### 10. 🌐 Minimal Glassmorphic Footer Links
+* **Source Code Repository Logo**: [MediSense-BD Repository](https://github.com/SamyoPramanik/MediSense-BD)
+* **GitHub Profile Logo**: [Samyo Pramanik GitHub Profile](https://github.com/SamyoPramanik)
+* **Contact Email Logo**: [samyopramanik2003@gmail.com](mailto:samyopramanik2003@gmail.com)
+
 
 
 
