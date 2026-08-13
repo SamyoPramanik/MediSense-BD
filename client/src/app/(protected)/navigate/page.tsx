@@ -89,11 +89,14 @@ export default function NavigatePage() {
     );
   }, [hospitals, searchQuery]);
 
+  const [osrmRouteInfo, setOsrmRouteInfo] = useState<{ distanceKm: number; durationMin: number } | null>(null);
+
   const activeDistance = useMemo(() => {
+    if (osrmRouteInfo?.distanceKm) return osrmRouteInfo.distanceKm;
     if (!selectedHospital) return null;
     const origin = userLocation || [23.8103, 90.4125];
     return calculateDistanceKm(origin[0], origin[1], selectedHospital.lat, selectedHospital.lng);
-  }, [selectedHospital, userLocation]);
+  }, [selectedHospital, userLocation, osrmRouteInfo]);
 
   return (
     <div className="relative space-y-4">
@@ -103,7 +106,7 @@ export default function NavigatePage() {
           Healthcare Navigation & SOS Routing
         </h1>
         <p className="text-white/50 text-sm mt-1">
-          Click any hospital name to display its live emergency route on the map
+          Click any hospital name to display its live emergency road route on the map
         </p>
       </div>
 
@@ -143,7 +146,7 @@ export default function NavigatePage() {
               </svg>
             </div>
 
-            {/* Hospital List (Clicking hospital selects it & shows route) */}
+            {/* Hospital List */}
             <div className="space-y-1.5 max-h-56 overflow-y-auto custom-scrollbar pr-1">
               {(nearestHospitals.length > 0 && !searchQuery ? nearestHospitals : filteredHospitals).slice(0, 15).map((h, i) => {
                 const isSelected = selectedHospital?.id === h.id;
@@ -203,7 +206,7 @@ export default function NavigatePage() {
           <div className="absolute top-4 right-4 z-10 w-72">
             <GlassCard className="!p-4 space-y-2 border-teal-500/40 shadow-2xl" style={{ background: 'rgba(3,28,28,0.92)' }}>
               <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                <span className="text-[10px] uppercase font-bold text-teal-400 tracking-wider">🗺️ Active Route</span>
+                <span className="text-[10px] uppercase font-bold text-teal-400 tracking-wider">🛣️ Real Road Route</span>
                 <button
                   onClick={() => setSelectedHospital(null)}
                   className="text-xs text-white/40 hover:text-white transition-colors"
@@ -218,12 +221,17 @@ export default function NavigatePage() {
               <div className="pt-1 text-xs space-y-1 font-mono">
                 {activeDistance !== null && (
                   <p className="text-teal-300 font-bold">
-                    📍 Route Distance: {activeDistance.toFixed(1)} km
+                    📍 Road Distance: {activeDistance.toFixed(1)} km
                   </p>
                 )}
+                {osrmRouteInfo?.durationMin ? (
+                  <p className="text-amber-300 font-bold">
+                    ⏱️ Driving Time: ~{osrmRouteInfo.durationMin} mins
+                  </p>
+                ) : null}
                 <p className="text-white/80">🛏️ Available Beds: {selectedHospital.available_beds}</p>
                 {selectedHospital.phone && (
-                  <p className="text-amber-300">📞 Phone: {selectedHospital.phone}</p>
+                  <p className="text-white/70">📞 Phone: {selectedHospital.phone}</p>
                 )}
               </div>
 
@@ -239,15 +247,18 @@ export default function NavigatePage() {
           </div>
         )}
 
-        {/* Map */}
         <RoutingMap
           hospitals={filteredHospitals}
           equityData={showEquity ? equityData : []}
           userLocation={userLocation}
           selectedHospital={selectedHospital}
           onSelectHospital={handleSelectHospital}
+          onRouteInfo={setOsrmRouteInfo}
         />
       </div>
     </div>
   );
 }
+
+
+

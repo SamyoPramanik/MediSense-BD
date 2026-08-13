@@ -22,7 +22,7 @@ export default function SOSButton() {
     <motion.button
       id="sos-button"
       onClick={handleSOS}
-      className="fixed bottom-36 right-6 z-30 w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-2xl"
+      className="fixed bottom-25 right-6 z-30 w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-2xl"
 
       style={{
         background: 'linear-gradient(135deg, #ef4444, #dc2626)',
@@ -41,7 +41,7 @@ export default function SOSButton() {
       aria-label="Emergency SOS"
     >
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-        <path d="M12 9v4m0 4h.01M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+        <path d="M12 9v4m0 4h.01M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
       </svg>
       <span className="absolute -top-1 -right-1 text-[10px] bg-white text-red-600 font-bold px-1.5 py-0.5 rounded-full">SOS</span>
     </motion.button>

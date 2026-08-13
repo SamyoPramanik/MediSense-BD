@@ -2,8 +2,9 @@
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BANGLADESH_CENTER, BANGLADESH_ZOOM } from '@/lib/constants';
+import { navigateApi } from '@/lib/api';
 
 // Hospital Marker Icon
 const hospitalIcon = new L.DivIcon({
@@ -40,8 +41,6 @@ function equityColor(score: number): string {
   return '#ef4444';
 }
 
-import { navigateApi } from '@/lib/api';
-
 type Hospital = Awaited<ReturnType<typeof navigateApi.hospitals>>[0];
 
 interface Props {
@@ -50,31 +49,38 @@ interface Props {
   userLocation: [number, number] | null;
   selectedHospital: Hospital | null;
   onSelectHospital: (hospital: Hospital | null) => void;
+  onRouteInfo?: (info: { distanceKm: number; durationMin: number } | null) => void;
 }
-
 
 function MapController({
   selectedHospital,
   userLocation,
+  routeGeometry,
 }: {
   selectedHospital: Hospital | null;
   userLocation: [number, number] | null;
+  routeGeometry: Array<[number, number]>;
 }) {
   const map = useMap();
 
   useEffect(() => {
     if (selectedHospital) {
-      const dest: [number, number] = [selectedHospital.lat, selectedHospital.lng];
-      if (userLocation) {
-        const bounds = L.latLngBounds([userLocation, dest]);
-        map.fitBounds(bounds, { padding: [80, 80], maxZoom: 15, duration: 1.5 });
+      if (routeGeometry.length > 0) {
+        const bounds = L.latLngBounds(routeGeometry);
+        map.fitBounds(bounds, { padding: [70, 70], maxZoom: 15, duration: 1.5 });
       } else {
-        map.flyTo(dest, 14, { duration: 1.5 });
+        const dest: [number, number] = [selectedHospital.lat, selectedHospital.lng];
+        if (userLocation) {
+          const bounds = L.latLngBounds([userLocation, dest]);
+          map.fitBounds(bounds, { padding: [70, 70], maxZoom: 15, duration: 1.5 });
+        } else {
+          map.flyTo(dest, 14, { duration: 1.5 });
+        }
       }
     } else if (userLocation) {
       map.flyTo(userLocation, 12, { duration: 1.5 });
     }
-  }, [selectedHospital, userLocation, map]);
+  }, [selectedHospital, userLocation, routeGeometry, map]);
 
   return null;
 }
@@ -85,16 +91,62 @@ export default function RoutingMap({
   userLocation,
   selectedHospital,
   onSelectHospital,
+  onRouteInfo,
 }: Props) {
   const markerRefs = useRef<Record<number, L.Marker | null>>({});
+
+  const [routeGeometry, setRouteGeometry] = useState<Array<[number, number]>>([]);
+  const [fetchingRoute, setFetchingRoute] = useState(false);
+
+  // Fetch real road navigation geometry from OSRM
+  useEffect(() => {
+    if (!selectedHospital) {
+      setRouteGeometry([]);
+      onRouteInfo?.(null);
+      return;
+    }
+
+    const origin = userLocation || BANGLADESH_CENTER;
+    const dest: [number, number] = [selectedHospital.lat, selectedHospital.lng];
+
+    setFetchingRoute(true);
+
+    // OSRM Driving Route API (lng,lat order for query)
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${origin[1]},${origin[0]};${dest[1]},${dest[0]}?overview=full&geometries=geojson`;
+
+    fetch(osrmUrl)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.routes && data.routes.length > 0) {
+          const route = data.routes[0];
+          // Convert GeoJSON [lng, lat] to Leaflet [lat, lng]
+          const coords: Array<[number, number]> = route.geometry.coordinates.map(
+            ([lng, lat]: [number, number]) => [lat, lng]
+          );
+          setRouteGeometry(coords);
+
+          const distanceKm = route.distance ? Number((route.distance / 1000).toFixed(1)) : 0;
+          const durationMin = route.duration ? Math.round(route.duration / 60) : 0;
+          onRouteInfo?.({ distanceKm, durationMin });
+        } else {
+          // Fallback to straight line
+          setRouteGeometry([origin, dest]);
+          onRouteInfo?.(null);
+        }
+      })
+      .catch((err) => {
+        console.error('OSRM route fetch failed, using straight line fallback:', err);
+        setRouteGeometry([origin, dest]);
+        onRouteInfo?.(null);
+      })
+      .finally(() => setFetchingRoute(false));
+  }, [selectedHospital, userLocation]);
 
   useEffect(() => {
     if (selectedHospital && markerRefs.current[selectedHospital.id]) {
       markerRefs.current[selectedHospital.id]?.openPopup();
     }
   }, [selectedHospital]);
-
-  const originPos: [number, number] = userLocation || BANGLADESH_CENTER;
 
   return (
     <div className="glass-card overflow-hidden relative" style={{ height: 'calc(100vh - 180px)' }}>
@@ -106,7 +158,7 @@ export default function RoutingMap({
         attributionControl={false}
       >
         <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-        <MapController selectedHospital={selectedHospital} userLocation={userLocation} />
+        <MapController selectedHospital={selectedHospital} userLocation={userLocation} routeGeometry={routeGeometry} />
 
         {/* Equity Heatmap Circles */}
         {equityData.map((e, i) => (
@@ -120,22 +172,22 @@ export default function RoutingMap({
           </CircleMarker>
         ))}
 
-        {/* Route Line when a Hospital is Selected */}
-        {selectedHospital && (
+        {/* Real Road Route Line when a Hospital is Selected */}
+        {selectedHospital && routeGeometry.length > 0 && (
           <>
             {/* Outer Red Glow Path */}
             <Polyline
-              positions={[originPos, [selectedHospital.lat, selectedHospital.lng]]}
+              positions={routeGeometry}
               color="#ef4444"
               weight={7}
-              opacity={0.4}
+              opacity={0.45}
             />
-            {/* Dashed Teal Emergency Route Line */}
+            {/* Active Dashed Teal Emergency Road Line */}
             <Polyline
-              positions={[originPos, [selectedHospital.lat, selectedHospital.lng]]}
+              positions={routeGeometry}
               color="#14b8a6"
               weight={4}
-              dashArray="8, 8"
+              dashArray="6, 8"
             />
           </>
         )}
@@ -167,7 +219,7 @@ export default function RoutingMap({
                     onClick={() => onSelectHospital(h)}
                     className="w-full mt-2 py-1 px-2 rounded bg-teal-600 hover:bg-teal-700 text-white font-bold text-[11px] transition-colors"
                   >
-                    🗺️ Navigate & Draw Route
+                    🗺️ Navigate & Draw Road Route
                   </button>
                 </div>
               </Popup>
