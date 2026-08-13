@@ -119,6 +119,9 @@ Detects GPS coordinates (`navigator.geolocation`) and queries `/api/navigate/nea
     WHERE h.has_emergency = true
     ORDER BY distance_km ASC LIMIT 5;
     ```
+*   **Interactive Hospital Route Selection (`RoutingMap.tsx`, `navigate/page.tsx`)**: Clicking any hospital name in the emergency facilities panel or map marker dynamically draws a glowing red/teal dashed route Polyline connecting the user's GPS location to the selected facility. Auto-fits map bounds and displays an active route info overlay card with calculated distance in KM, bed availability, and direct emergency call action.
+*   **Floating Action Widget Stacking (`SOSButton.tsx`, `GlobalAiChatbot.tsx`)**: Repositioned the floating SOS Emergency button (`bottom-36 right-6`) and AI Health Assistant launcher (`bottom-20 right-6`) so they stack vertically without overlapping each other or obscuring footer icon links.
+
 
 *   **Bengali Symptom Triage (`TriageChat.tsx` & `server/routes/verify.js`)**: Evaluates Bengali symptom queries (e.g., `'শ্বাসকষ্ট'`, `'জ্বর'`) to classify triage severity (`low`, `moderate`, `critical`). Powered by BanglaBERT keyword matching combined with Groq Cloud AI / OpenAI LLM recommendations, styled markdown rendering (`FormattedMarkdown`), fixed compact height (`h-[520px] max-h-[520px]`), smooth custom scrollbar, and browser `localStorage` conversation persistence (`medisense_triage_chat_messages`).
 *   **Admin-Only Activity Audit Logging (`auditLogger.js`, `audit.js`, `ActivityTracker.tsx`)**: Records every HTTP request, response status, execution latency, request payload, response payload, client IP, User-Agent, user credentials, and page visits into `server/logs/activity_audit.log`. Strictly restricted to Administrator accounts (`role === 'admin'`). Requests to `/api/audit/*` and visits to `/audit` are automatically bypassed to prevent log feedback loops.

@@ -26,17 +26,17 @@ export default function GlobalAiChatbot() {
 
   const quickPrompts = districtName
     ? [
-        `Explain outbreak risk in ${districtName}`,
-        `Hospital & bed capacity in ${districtName}`,
-        `Prevention tips for ${districtName}`,
-        `Search web for Dengue trends`
-      ]
+      `Explain outbreak risk in ${districtName}`,
+      `Hospital & bed capacity in ${districtName}`,
+      `Prevention tips for ${districtName}`,
+      `Search web for Dengue trends`
+    ]
     : [
-        'National Dengue outbreak forecast',
-        'Find nearest hospital with ICU beds',
-        'Verify medicine authenticity',
-        'Bengali symptom triage guidelines'
-      ];
+      'National Dengue outbreak forecast',
+      'Find nearest hospital with ICU beds',
+      'Verify medicine authenticity',
+      'Bengali symptom triage guidelines'
+    ];
 
   return (
     <>
@@ -45,7 +45,8 @@ export default function GlobalAiChatbot() {
         {!isOpen && (
           <motion.button
             onClick={openChat}
-            className="fixed bottom-6 right-6 z-40 p-3.5 rounded-full text-white shadow-2xl flex items-center gap-2.5 transition-all group"
+            className="fixed bottom-12 right-6 z-40 p-3 rounded-full text-white shadow-2xl flex items-center gap-2.5 transition-all group"
+
             style={{
               background: 'linear-gradient(135deg, #14b8a6, #0d9488)',
               boxShadow: '0 8px 32px rgba(20, 184, 166, 0.4), 0 0 20px rgba(13, 148, 136, 0.3)',
@@ -141,11 +142,10 @@ export default function GlobalAiChatbot() {
                     className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
                   >
                     <div
-                      className={`max-w-[88%] p-3 rounded-2xl leading-relaxed ${
-                        msg.sender === 'user'
-                          ? 'bg-teal-600 text-white rounded-br-none shadow-md'
-                          : 'glass-card border border-white/10 text-white/90 rounded-bl-none'
-                      }`}
+                      className={`max-w-[88%] p-3 rounded-2xl leading-relaxed ${msg.sender === 'user'
+                        ? 'bg-teal-600 text-white rounded-br-none shadow-md'
+                        : 'glass-card border border-white/10 text-white/90 rounded-bl-none'
+                        }`}
                     >
                       <FormattedMarkdown content={msg.text} theme="teal" />
                     </div>

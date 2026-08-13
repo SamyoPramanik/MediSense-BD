@@ -50,8 +50,11 @@
 
 ### 5. 🏥 Emergency Healthcare Navigation & GPS Routing
 * **Nearest Hospital Finder**: Uses native PostgreSQL Haversine distance calculations to locate the 5 nearest 24/7 emergency facilities relative to user GPS coordinates.
+* **Interactive Hospital Route Drawing**: Clicking any hospital name in the emergency list or map marker draws a glowing red/teal dashed emergency route Polyline connecting your location to that hospital, auto-zooming the map and displaying an active route info card with distance in KM, available beds, and emergency call button.
 * **Bed Capacity Tracking**: Real-time visibility into total vs available hospital beds.
 * **Upazila Health Equity Index**: Heatmaps measuring doctor ratios, bed ratios, and vaccine coverage.
+* **Non-Overlapping Floating Action Widgets**: Vertically stacked floating SOS Emergency button (`bottom-36 right-6`) and AI Health Assistant launcher (`bottom-20 right-6`) to ensure full accessibility without blocking the footer icons.
+
 
 ### 6. 💊 DGDA Drug Authenticity Verification
 * **Barcode Reader & Search**: Validates pharmaceuticals against the Directorate General of Drug Administration (DGDA) registry.

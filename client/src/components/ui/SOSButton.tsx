@@ -22,7 +22,8 @@ export default function SOSButton() {
     <motion.button
       id="sos-button"
       onClick={handleSOS}
-      className="fixed bottom-6 right-6 z-30 w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-2xl"
+      className="fixed bottom-36 right-6 z-30 w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-2xl"
+
       style={{
         background: 'linear-gradient(135deg, #ef4444, #dc2626)',
         boxShadow: '0 0 30px rgba(239, 68, 68, 0.4)',
