@@ -11,24 +11,31 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
   if (!content) return null;
 
   const accentColor = theme === 'pink' ? 'text-pink-300' : 'text-teal-300';
+  const boldColor = theme === 'pink' ? 'text-pink-200 font-extrabold' : 'text-teal-200 font-extrabold';
   const badgeBg = theme === 'pink' ? 'bg-pink-500/20 text-pink-300 border-pink-500/30' : 'bg-teal-500/20 text-teal-300 border-teal-500/30';
   const hrColor = theme === 'pink' ? 'border-pink-500/30' : 'border-teal-500/30';
   const tableHeaderBg = theme === 'pink' ? 'rgba(236, 72, 153, 0.18)' : 'rgba(20, 184, 166, 0.18)';
   const bulletBg = theme === 'pink' ? 'bg-pink-400' : 'bg-teal-400';
 
-  // Inline syntax parser: **bold**, *italic*, `code`, [label](url), [BadgeText]
+  // Cross-browser lookbehind-free inline syntax parser: **bold**, __bold__, *italic*, _italic_, ***bold-italic***, ~~strikethrough~~, `code`, [label](url), [BadgeText]
   const parseInline = (text: string): React.ReactNode[] => {
     if (!text) return [];
 
-    // Preprocess: auto-repair unclosed asterisks if truncated
     let sanitized = text;
-    const doubleAsteriskCount = (sanitized.match(/\*\*/g) || []).length;
-    if (doubleAsteriskCount % 2 !== 0) sanitized += '**';
-    const singleAsteriskCount = (sanitized.replace(/\*\*/g, '').match(/\*/g) || []).length;
-    if (singleAsteriskCount % 2 !== 0) sanitized += '*';
 
-    // Regex matching: [link](url), `code`, **bold**, *italic*, [badge]
-    const regex = /(\[.*?\]\(https?:\/\/.*?\)|\`.*?\`|\*\*.*?\*\*|\*.*?\*|\[.*?\])/g;
+    // Auto-repair unclosed formatting tokens if AI response was truncated mid-sentence
+    const doubleAsterisks = (sanitized.match(/\*\*/g) || []).length;
+    if (doubleAsterisks % 2 !== 0) sanitized += '**';
+
+    const doubleTildes = (sanitized.match(/~~/g) || []).length;
+    if (doubleTildes % 2 !== 0) sanitized += '~~';
+
+    const singleAsterisks = (sanitized.replace(/\*\*/g, '').match(/\*/g) || []).length;
+    if (singleAsterisks % 2 !== 0) sanitized += '*';
+
+    // Regex matching: [link](url), `code`, ~~strikethrough~~, ***bold-italic***, **bold**, *italic*, [badge]
+    const regex = /(\[.*?\]\(https?:\/\/.*?\)|\`[^\`]+\`|~~[^~]+~~|\*\*\*[\s\S]+?\*\*\*|___[\s\S]+?___|\*\*[\s\S]+?\*\*|__[\s\S]+?__|(?:\b|_)\*[^\*]+?\*(?:\b|_)|(?:\b|\*)_[^_]+?_(?:\b|\*)|\[[^\]]+\])/g;
+
     const parts = sanitized.split(regex);
 
     return parts.map((part, idx) => {
@@ -43,9 +50,9 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
             href={linkMatch[2]}
             target="_blank"
             rel="noopener noreferrer"
-            className={`font-semibold underline underline-offset-2 hover:opacity-80 transition-opacity ${accentColor} break-words`}
+            className={`font-bold underline underline-offset-2 hover:opacity-80 transition-opacity ${accentColor} break-words`}
           >
-            {linkMatch[1]}
+            {parseInline(linkMatch[1])}
           </a>
         );
       }
@@ -59,20 +66,41 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
         );
       }
 
-      // Bold **text**
-      if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+      // Strikethrough: ~~text~~
+      if (part.startsWith('~~') && part.endsWith('~~') && part.length >= 4) {
         return (
-          <strong key={idx} className="font-semibold text-white break-words">
-            {part.slice(2, -2)}
+          <del key={idx} className="line-through text-white/60 font-medium break-words">
+            {parseInline(part.slice(2, -2))}
+          </del>
+        );
+      }
+
+      // Bold-Italic: ***text*** or ___text___
+      if ((part.startsWith('***') && part.endsWith('***') && part.length >= 6) ||
+          (part.startsWith('___') && part.endsWith('___') && part.length >= 6)) {
+        return (
+          <strong key={idx} className={`font-extrabold italic text-white ${boldColor} break-words`}>
+            {parseInline(part.slice(3, -3))}
           </strong>
         );
       }
 
-      // Italic *text*
-      if (part.startsWith('*') && part.endsWith('*') && !part.startsWith('**') && part.length >= 2) {
+      // Bold: **text** or __text__
+      if ((part.startsWith('**') && part.endsWith('**') && part.length >= 4) ||
+          (part.startsWith('__') && part.endsWith('__') && part.length >= 4)) {
         return (
-          <em key={idx} className="italic text-white/85 break-words">
-            {part.slice(1, -1)}
+          <strong key={idx} className={`font-extrabold text-white ${boldColor} break-words`}>
+            {parseInline(part.slice(2, -2))}
+          </strong>
+        );
+      }
+
+      // Italic: *text* or _text_
+      if ((part.startsWith('*') && part.endsWith('*') && !part.startsWith('**') && part.length >= 2) ||
+          (part.startsWith('_') && part.endsWith('_') && !part.startsWith('__') && part.length >= 2)) {
+        return (
+          <em key={idx} className="italic text-white/90 font-medium break-words">
+            {parseInline(part.slice(1, -1))}
           </em>
         );
       }
@@ -235,13 +263,11 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
     // Line Separators: ===, ---, ***, ___ (Setext underline or HR)
     if (trimmed.match(/^={3,}$/) || trimmed.match(/^-{3,}$/) || trimmed.match(/^\*{3,}$/) || trimmed.match(/^_{3,}$/)) {
       flushList();
-      // If previous element was a paragraph, upgrade it to a styled header if applicable
       if (elements.length > 0 && trimmed.match(/^={3,}$/)) {
         const last = elements[elements.length - 1];
         if (React.isValidElement(last) && last.type === 'p') {
           const prevText = (last.props as { children?: React.ReactNode })?.children;
-          elements.pop(); // replace last paragraph
-
+          elements.pop();
           elements.push(
             <h2 key={`setext-h2-${index}`} className={`text-base font-bold mt-3 mb-2 flex items-center gap-2 ${accentColor} border-b border-white/10 pb-1 break-words`} style={{ fontFamily: 'Outfit, sans-serif' }}>
               {prevText}

@@ -18,7 +18,8 @@
 ### 3. 🤖 Page-Wide AI Chatbot Assistant
 * **Floating Assistant**: Accessible on every page via a floating glassmorphic launcher.
 * **Live Search & Database Retrieval**: Queries PostgreSQL database history and web search index citations to answer questions on local disease precautions, hospital bed availability, and treatment guidelines.
-* **Universal Markdown & Table Formatting**: Custom styled parser (`FormattedMarkdown`) rendering headers (H1 through H6, including `####` subheadings), bold text, italic, inline code, fenced code blocks, blockquotes, clean bullet points (with hyphens `-` properly stripped), numbered lists, badges, links (`[text](url)`), and responsive HTML Tables (`<table>`) with hoverable rows.
+* **Universal Markdown & Table Formatting**: Custom styled parser (`FormattedMarkdown`) rendering headers (H1 through H6 & Setext `==`/`--`), **bold** (`**text**` and `__text__`), *italic* (`*text*` and `_text_`), ***bold-italic*** (`***text***`), ~~strikethrough~~ (`~~text~~`), inline code (`` `code` ``), fenced code blocks, blockquotes, bullet points, numbered lists, badges, links (`[text](url)`), and responsive HTML Tables (`<table>`) with hoverable rows.
+
 
 * **Multi-Device Local Wi-Fi / LAN Access**: Configured relative API routing (`API_BASE = '/api'`) and Docker build arguments (`ARG NEXT_PUBLIC_API_URL=/api`), allowing mobile phones, tablets, and secondary devices on the same Wi-Fi network to access `http://<your-ip>` without experiencing CORS or `Failed to fetch` connection errors.
 * **User-Isolated LocalStorage Persistence**: Chat message history and active district context are dynamically scoped to the logged-in user ID (`medisense_chat_messages_u${user.id}`). Different users logging into the same browser cannot access or view another user's chat history.
