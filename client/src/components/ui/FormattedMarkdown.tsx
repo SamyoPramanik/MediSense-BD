@@ -11,13 +11,14 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
   if (!content) return null;
 
   const accentColor = theme === 'pink' ? 'text-pink-300' : 'text-teal-300';
-  const boldTextColor = theme === 'pink' ? 'text-pink-200 font-extrabold' : 'text-amber-200 font-extrabold';
+  const boldTextColor = theme === 'pink' ? 'text-pink-200' : 'text-teal-200';
+  const headerBarBg = theme === 'pink' ? 'bg-pink-400' : 'bg-teal-400';
   const badgeBg = theme === 'pink' ? 'bg-pink-500/20 text-pink-300 border-pink-500/30' : 'bg-teal-500/20 text-teal-300 border-teal-500/30';
   const hrColor = theme === 'pink' ? 'border-pink-500/30' : 'border-teal-500/30';
-  const tableHeaderBg = theme === 'pink' ? 'rgba(236, 72, 153, 0.18)' : 'rgba(20, 184, 166, 0.18)';
+  const tableHeaderBg = theme === 'pink' ? 'rgba(236, 72, 153, 0.2)' : 'rgba(20, 184, 166, 0.2)';
   const bulletBg = theme === 'pink' ? 'bg-pink-400' : 'bg-teal-400';
 
-  // Inline syntax parser (NO ITALICS - ALL ASTERISK/UNDERSCORE WRAPPERS MAP STRICTLY TO BOLD)
+  // Inline syntax parser (NO ITALICS - ALL ASTERISK/UNDERSCORE WRAPPERS MAP STRICTLY TO BOLD WITH THEME HIGHLIGHT)
   const parseInline = (text: string): React.ReactNode[] => {
     if (!text) return [];
 
@@ -75,17 +76,16 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
         );
       }
 
-      // BOLD ONLY: Any *, **, ***, _, __, ___ wrapped text renders as ULTRA BOLD (No Italics)
+      // BOLD ONLY: Any *, **, ***, _, __, ___ wrapped text renders as BOLD with Theme Color Accent
       const isAsteriskBold = (part.startsWith('*') && part.endsWith('*') && part.length >= 2);
       const isUnderscoreBold = (part.startsWith('_') && part.endsWith('_') && part.length >= 2);
 
       if (isAsteriskBold || isUnderscoreBold) {
-        // Strip outer *, **, *** or _, __, ___
         const innerText = part.replace(/^(\*{1,3}|_{1,3})/, '').replace(/(\*{1,3}|_{1,3})$/, '');
         return (
           <strong
             key={idx}
-            className={`font-extrabold ${boldTextColor} break-words`}
+            className={`font-black ${boldTextColor} text-white break-words`}
             style={{ fontWeight: 800 }}
           >
             {parseInline(innerText)}
@@ -107,6 +107,11 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
 
       return <span key={idx} className="break-words">{part}</span>;
     });
+  };
+
+  // Helper to clean header titles (strips outer ** if header is written as ### **Title**)
+  const cleanHeaderTitle = (title: string): string => {
+    return title.trim().replace(/^(\*{1,3}|_{1,3})/, '').replace(/(\*{1,3}|_{1,3})$/, '');
   };
 
   // Process block lines
@@ -164,7 +169,7 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
                 <tr className="border-b border-white/20" style={{ background: tableHeaderBg }}>
                   {headerCells.map((h, colIdx) => (
                     <th key={colIdx} className={`p-2.5 font-bold text-[11px] uppercase tracking-wider ${accentColor} break-words`}>
-                      {parseInline(h)}
+                      {parseInline(cleanHeaderTitle(h))}
                     </th>
                   ))}
                 </tr>
@@ -257,9 +262,10 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
           const prevText = (last.props as { children?: React.ReactNode })?.children;
           elements.pop();
           elements.push(
-            <h2 key={`setext-h2-${index}`} className={`text-base font-bold mt-3 mb-2 flex items-center gap-2 ${accentColor} border-b border-white/10 pb-1 break-words`} style={{ fontFamily: 'Outfit, sans-serif' }}>
-              {prevText}
-            </h2>
+            <h1 key={`setext-h1-${index}`} className={`text-base font-extrabold mt-3.5 mb-2.5 flex items-center gap-2 ${accentColor} border-b border-white/15 pb-2 break-words`} style={{ fontFamily: 'Outfit, sans-serif' }}>
+              <span className={`w-1.5 h-4 rounded-full ${headerBarBg}`} />
+              <span>{prevText}</span>
+            </h1>
           );
           return;
         }
@@ -280,53 +286,62 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
       return;
     }
 
-    // All Headings: # through ######
+    // All Headings: # through ###### with Theme Accent Bar
     const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)/);
     if (headingMatch) {
       flushList();
       const level = headingMatch[1].length;
-      const title = headingMatch[2];
+      const titleText = cleanHeaderTitle(headingMatch[2]);
 
       if (level === 1) {
         elements.push(
-          <h1 key={`h1-${index}`} className={`text-lg font-extrabold mt-4 mb-2 ${accentColor} break-words`} style={{ fontFamily: 'Outfit, sans-serif' }}>
-            {parseInline(title)}
+          <h1 key={`h1-${index}`} className={`text-lg font-extrabold mt-4 mb-2 flex items-center gap-2 ${accentColor} border-b border-white/15 pb-1.5 break-words`} style={{ fontFamily: 'Outfit, sans-serif' }}>
+            <span className={`w-2 h-5 rounded-full ${headerBarBg}`} />
+            <span>{parseInline(titleText)}</span>
           </h1>
         );
       } else if (level === 2) {
         elements.push(
-          <h2 key={`h2-${index}`} className={`text-base font-bold mt-3.5 mb-2 ${accentColor} break-words`} style={{ fontFamily: 'Outfit, sans-serif' }}>
-            {parseInline(title)}
+          <h2 key={`h2-${index}`} className={`text-base font-extrabold mt-3.5 mb-2 flex items-center gap-2 ${accentColor} border-b border-white/10 pb-1 break-words`} style={{ fontFamily: 'Outfit, sans-serif' }}>
+            <span className={`w-1.5 h-4.5 rounded-full ${headerBarBg}`} />
+            <span>{parseInline(titleText)}</span>
           </h2>
         );
       } else if (level === 3) {
         elements.push(
-          <h3 key={`h3-${index}`} className={`text-sm font-bold mt-3 mb-1.5 ${accentColor} break-words`} style={{ fontFamily: 'Outfit, sans-serif' }}>
-            {parseInline(title)}
+          <h3 key={`h3-${index}`} className={`text-sm font-extrabold mt-3.5 mb-1.5 flex items-center gap-2 ${accentColor} break-words`} style={{ fontFamily: 'Outfit, sans-serif' }}>
+            <span className={`w-1.5 h-4 rounded-full ${headerBarBg}`} />
+            <span>{parseInline(titleText)}</span>
           </h3>
         );
       } else if (level === 4) {
         elements.push(
-          <h4 key={`h4-${index}`} className={`text-xs font-bold mt-2.5 mb-1.5 tracking-wide ${accentColor} break-words`} style={{ fontFamily: 'Outfit, sans-serif' }}>
-            {parseInline(title)}
+          <h4 key={`h4-${index}`} className={`text-xs font-extrabold mt-3 mb-1.5 flex items-center gap-2 ${accentColor} break-words`} style={{ fontFamily: 'Outfit, sans-serif' }}>
+            <span className={`w-1 h-3.5 rounded-full ${headerBarBg}`} />
+            <span>{parseInline(titleText)}</span>
           </h4>
         );
       } else {
         elements.push(
-          <h5 key={`h5-${index}`} className={`text-xs font-semibold mt-2 mb-1 ${accentColor} break-words`}>
-            {parseInline(title)}
+          <h5 key={`h5-${index}`} className={`text-xs font-bold mt-2.5 mb-1 flex items-center gap-1.5 ${accentColor} break-words`}>
+            <span className={`w-1 h-3 rounded-full ${headerBarBg}`} />
+            <span>{parseInline(titleText)}</span>
           </h5>
         );
       }
       return;
     }
 
-    // Bullet points: * Item, - Item, + Item
-    if (trimmed.startsWith('* ') || trimmed.startsWith('- ') || trimmed.startsWith('+ ')) {
-      const itemText = trimmed.replace(/^[\*\-\+]\s+/, '');
+    // Bullet points: * Item, - Item, + Item (including indented sub-bullets)
+    const bulletMatch = line.match(/^(\s*)([\*\-\+])\s+(.*)/);
+    if (bulletMatch) {
+      const indent = bulletMatch[1].length;
+      const itemText = bulletMatch[3];
+      const isSubItem = indent > 0 || line.startsWith('\t');
+
       listItems.push(
-        <li key={`li-${index}`} className="flex items-start gap-2 text-white/90 text-xs leading-relaxed break-words">
-          <span className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${bulletBg}`} />
+        <li key={`li-${index}`} className={`flex items-start gap-2 text-white/90 text-xs leading-relaxed break-words ${isSubItem ? 'pl-4 my-1' : 'my-1.5'}`}>
+          <span className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${isSubItem ? 'bg-white/40' : bulletBg}`} />
           <span className="flex-1 break-words min-w-0">{parseInline(itemText)}</span>
         </li>
       );
@@ -339,7 +354,7 @@ export default function FormattedMarkdown({ content, className = '', theme = 'te
       const num = numMatch[1];
       const itemText = numMatch[2];
       listItems.push(
-        <li key={`li-${index}`} className="flex items-start gap-2 text-white/90 text-xs leading-relaxed break-words">
+        <li key={`li-${index}`} className="flex items-start gap-2 text-white/90 text-xs leading-relaxed break-words my-1.5">
           <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-md flex-shrink-0 mt-0.5 ${badgeBg}`}>
             {num}
           </span>

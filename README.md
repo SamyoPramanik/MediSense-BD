@@ -18,8 +18,9 @@
 ### 3. 🤖 Page-Wide AI Chatbot Assistant
 * **Floating Assistant**: Accessible on every page via a floating glassmorphic launcher.
 * **Live Search & Database Retrieval**: Queries PostgreSQL database history and web search index citations to answer questions on local disease precautions, hospital bed availability, and treatment guidelines.
-* **Universal Markdown & Table Formatting**: Custom styled parser (`FormattedMarkdown`) enforcing **bold** (`style={{ fontWeight: 800 }}`) for all asterisk/underscore delimiters (`*`, `**`, `***`, `_`, `__`, `___`), eliminating italics. Supports headers (H1 through H6 & Setext `==`/`--`), ~~strikethrough~~ (`~~text~~`), inline code, fenced code blocks, blockquotes, lists, badges, and responsive HTML tables.
+* **Universal Markdown & Table Formatting**: Custom styled parser (`FormattedMarkdown`) rendering headers (H1-H6 & Setext `==`/`--`) with theme-matched colors (`text-teal-300` / `text-pink-300`) and vertical accent bars. Enforces **bold** (`style={{ fontWeight: 800 }}`) with theme highlights (`text-teal-200` / `text-pink-200`) for all asterisk/underscore delimiters (`*`, `**`, `***`, `_`, `__`, `___`), eliminating italics. Supports sub-bullet indentation, strikethrough, code blocks, lists, badges, and responsive tables.
 * **Multiline Input & Shift+Enter Newlines**: Auto-expanding chat textareas in system-wide AI and Nari Care AI allow `Shift + Enter` to insert newlines without submitting, while `Enter` alone submits the prompt.
+
 
 
 
