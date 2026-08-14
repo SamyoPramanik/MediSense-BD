@@ -63,8 +63,8 @@ router.post('/triage', async (req, res) => {
     if (groqKey || openaiKey) {
       try {
         const apiKey = groqKey || openaiKey;
-        const endpoint = groqKey 
-          ? 'https://api.groq.com/openai/v1/chat/completions' 
+        const endpoint = groqKey
+          ? 'https://api.groq.com/openai/v1/chat/completions'
           : 'https://api.openai.com/v1/chat/completions';
         const model = groqKey ? 'llama-3.3-70b-versatile' : 'gpt-4o-mini';
 
@@ -84,7 +84,7 @@ router.post('/triage', async (req, res) => {
 CRITICAL INSTRUCTIONS & STRICT BOUNDARIES:
 1. SCOPE REQUIREMENT: You MUST ONLY evaluate patient medical symptoms, health complaints, diseases, and emergency triage inquiries.
 2. OFF-TOPIC STRICT REFUSAL RULE: If the user query is not about medical symptoms or health (e.g., coding, mathematics, sports, general entertainment):
-   - You MUST DECLINE in polite Bengali: "আমি MediSense বাংলা AI ট্রায়াজ সহকারী। আমি শুধুমাত্র স্বাস্থ্য উপসর্গ ও প্রাথমিক চিকিৎসা মূল্যায়নে সহায়ক। অনাকাঙ্ক্ষিত বিষয়ে প্রশ্নের উত্তর প্রদান করা আমার পরিধির বাইরে।"
+   - You MUST DECLINE in polite Bengali: "আমি AI Doctor। আমি শুধুমাত্র স্বাস্থ্য উপসর্গ ও প্রাথমিক চিকিৎসা মূল্যায়নে সহায়ক। অনাকাঙ্ক্ষিত বিষয়ে প্রশ্নের উত্তর প্রদান করা আমার পরিধির বাইরে।"
 3. RESPONSE FORMAT: Provide clear, medically sound Bengali advice with urgency indicators and markdown formatting.`
               },
 

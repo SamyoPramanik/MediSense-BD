@@ -23,7 +23,7 @@ const levelLabels: Record<string, string> = {
 const defaultInitialMessage: Message = {
   id: 0,
   role: 'assistant',
-  text: `### 🩺 আসসালামু আলাইকুম! MediSense AI ট্রায়াজ সহকারী
+  text: `### 🩺 আসসালামু আলাইকুম! MediSense AI Doctor
 
 আপনার শারীরিক লক্ষণ বা উপসর্গগুলি বাংলায় লিখুন। আমি প্রাথমিক মূল্যায়ন ও স্বাস্থ্য উপদেশ প্রদান করব।
 
@@ -66,7 +66,7 @@ export default function TriageChat() {
       if (messages.length > 0) {
         localStorage.setItem(`medisense_triage_chat_messages_${userIdKey}`, JSON.stringify(messages));
       }
-    } catch (err) {}
+    } catch (err) { }
   }, [messages, userIdKey]);
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export default function TriageChat() {
     setMessages([defaultInitialMessage]);
     try {
       localStorage.removeItem(`medisense_triage_chat_messages_${userIdKey}`);
-    } catch (e) {}
+    } catch (e) { }
   };
 
 
@@ -121,8 +121,8 @@ ${symptoms}
             <span className="text-sm">🩺</span>
           </div>
           <div>
-            <p className="text-sm font-bold text-white">বাংলা AI ট্রায়াজ সহকারী</p>
-            <p className="text-[10px] text-teal-400 opacity-80">BanglaBERT & Groq LLM Triage Engine</p>
+            <p className="text-sm font-bold text-white">বাংলা AI Doctor</p>
+            <p className="text-[10px] text-teal-400 opacity-80">BanglaBERT & Groq LLM AI Doctor</p>
           </div>
         </div>
 

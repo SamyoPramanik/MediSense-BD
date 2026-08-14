@@ -13,7 +13,7 @@ export const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
   { id: 'predict', label: 'Predict', href: '/predict', icon: 'predict' },
   { id: 'navigate', label: 'Navigate', href: '/navigate', icon: 'navigate' },
-  { id: 'verify', label: 'Verify', href: '/verify', icon: 'verify' },
+  { id: 'aiDoctor', label: 'AI Doctor', href: '/verify', icon: 'aiDoctor' },
   { id: 'settings', label: 'Settings', href: '/settings', icon: 'settings' },
 ] as const;
 
