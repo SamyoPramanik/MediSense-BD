@@ -6,6 +6,8 @@ import FormattedMarkdown from '@/components/ui/FormattedMarkdown';
 import { chatApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
+import ClinicalReportModal, { ClinicalReportData } from '@/components/reports/ClinicalReportModal';
+
 interface Message {
   id: string;
   sender: 'user' | 'ai';
@@ -38,6 +40,31 @@ How are you feeling today? You can choose a quick topic below or ask any questio
   const [messages, setMessages] = useState<Message[]>([defaultWelcome]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportData, setReportData] = useState<ClinicalReportData | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+
+  const handleGenerateReport = async () => {
+    setReportModalOpen(true);
+    setReportLoading(true);
+    try {
+      const historyPayload = messages.map(m => ({ sender: m.sender, text: m.text }));
+      const res = await chatApi.generateReport({
+        history: historyPayload,
+        user: user || {},
+        districtName: 'Female Care Health Module'
+      });
+      if (res && res.report) {
+        setReportData(res.report);
+      }
+    } catch (err) {
+      console.error('Failed to generate female care report:', err);
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Restore user-isolated female care messages from browser localStorage
@@ -252,6 +279,15 @@ How are you feeling today? You can choose a quick topic below or ask any questio
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {messages.length > 0 && (
+              <button
+                onClick={handleGenerateReport}
+                className="px-3 py-1.5 rounded-lg bg-pink-500/20 text-pink-200 border border-pink-500/30 hover:bg-pink-500/30 text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md"
+                title="Generate Clinical Assessment & Care Report"
+              >
+                <span>📋 Export Clinical Report</span>
+              </button>
+            )}
             {messages.length > 1 && (
               <button
                 onClick={handleClearHistory}
@@ -266,6 +302,7 @@ How are you feeling today? You can choose a quick topic below or ask any questio
               Groq & OpenAI Powered
             </span>
           </div>
+
 
         </div>
 
@@ -340,6 +377,15 @@ How are you feeling today? You can choose a quick topic below or ask any questio
         </form>
 
       </motion.div>
+
+      {/* Clinical Assessment & Care Report Modal */}
+      <ClinicalReportModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        report={reportData}
+        loading={reportLoading}
+      />
     </div>
   );
 }
+

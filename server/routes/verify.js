@@ -66,7 +66,9 @@ router.post('/triage', async (req, res) => {
         const endpoint = groqKey
           ? 'https://api.groq.com/openai/v1/chat/completions'
           : 'https://api.openai.com/v1/chat/completions';
-        const model = groqKey ? 'llama-3.3-70b-versatile' : 'gpt-4o-mini';
+        const model = groqKey ? 'openai/gpt-oss-120b' : 'gpt-4o-mini';
+
+
 
         const llmRes = await fetch(endpoint, {
           method: 'POST',

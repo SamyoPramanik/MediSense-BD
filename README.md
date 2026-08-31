@@ -20,6 +20,10 @@
 * **Live Search & Database Retrieval**: Queries PostgreSQL database history and web search index citations to answer questions on local disease precautions, hospital bed availability, and treatment guidelines.
 * **Universal Markdown & Table Formatting**: Custom styled parser (`FormattedMarkdown`) rendering headers (H1-H6 & Setext `==`/`--`) with theme-matched colors (`text-teal-300` / `text-pink-300`) and vertical accent bars. Enforces **bold** (`style={{ fontWeight: 800 }}`) with theme highlights (`text-teal-200` / `text-pink-200`) for all asterisk/underscore delimiters (`*`, `**`, `***`, `_`, `__`, `___`), eliminating italics. Supports sub-bullet indentation, strikethrough, code blocks, lists, badges, and responsive tables.
 * **Multiline Input & Shift+Enter Newlines**: Auto-expanding chat textareas in system-wide AI and Nari Care AI allow `Shift + Enter` to insert newlines without submitting, while `Enter` alone submits the prompt.
+* **AI Clinical Assessment & Prescription Export**: Users inside **AI Doctor / Bangla Triage** (`/verify`) and **Nari Care AI** (`/female-care`) can click **"📋 Export Clinical Report"** after chatting to synthesize a robust, authentic **Medical Prescription (Rx)** layout with letterhead header, Chief Complaints (C/O), Prescribed Medications & Management table (Rx), Lab Test Extractions, Safety Triage, and digital physician sign-off block with native print & PDF export support.
+
+
+
 
 
 

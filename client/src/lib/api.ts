@@ -86,7 +86,12 @@ export const chatApi = {
     apiFetch<{ reply: string; source?: string }>('/chat/female-care', {
       method: 'POST', body: JSON.stringify(data),
     }),
+  generateReport: (data: { history: Array<{ sender: string; text: string }>; user?: any; districtName?: string }) =>
+    apiFetch<{ success: boolean; report: any; source?: string }>('/chat/generate-report', {
+      method: 'POST', body: JSON.stringify(data),
+    }),
 };
+
 
 
 // Dashboard

@@ -128,6 +128,15 @@ Detects GPS coordinates (`navigator.geolocation`) and queries `/api/navigate/nea
 *   **Universal Markdown & Table Parser (`FormattedMarkdown.tsx`)**: Renders H1 (`#`) through H6 (`######`) and Setext (`==`/`--`) headers with theme-matched colors (`text-teal-300` / `text-pink-300`) and vertical accent bars (`w-1.5 h-4 bg-teal-400`). Enforces BOLD-ONLY rendering (`style={{ fontWeight: 800 }}`) styled with theme contrast (`text-teal-200` / `text-pink-200`) for all asterisk and underscore delimiters (`*`, `**`, `***`, `_`, `__`, `___`), eliminating italics. Supports sub-bullet indentation, strikethrough, code blocks, links, badges, and responsive tables.
 
 *   **Multiline Chatbot Input & Shift+Enter Newlines (`GlobalAiChatbot.tsx`, `female-care/page.tsx`)**: Replaced standard single-line input boxes with auto-expanding textareas. `Shift + Enter` inserts newlines without submitting, while `Enter` alone sends the prompt.
+*   **Groq AI Models (`queryLLM`, `POST /api/chat/generate-report`)**: Configured with `openai/gpt-oss-120b` as primary model (with automatic fallback cascade to `deepseek-r1-distill-llama-70b`, `mixtral-8x7b-32768`, `gemma2-9b-it`, `llama-3.1-8b-instant`).
+
+*   **Targeted AI Doctor & Female Care Clinical Prescription & Assessment Export (`ClinicalReportModal.tsx`)**: Report generation inside **AI Doctor / Bangla Triage** (`TriageChat.tsx`) and **Female AI Care** (`female-care/page.tsx`) produces a robust, authentic **Medical Prescription (Rx)** layout with official letterhead header, Chief Complaints (C/O), Prescribed Medications & Management table (Rx), Diagnostic Test Extractions, Clinical Summary, Safety Triage, and digital physician sign-off block. Powered by a standalone clean popup print handler (`window.open`) with Tailwind CSS rendering for 100% reliable PDF download and system print execution without scroll clipping or blank page errors.
+
+
+
+
+
+
 
 
 

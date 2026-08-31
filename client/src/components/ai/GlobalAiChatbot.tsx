@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FormattedMarkdown from '@/components/ui/FormattedMarkdown';
 import { useChat } from './ChatContext';
 
-
 export default function GlobalAiChatbot() {
   const { isOpen, districtName, messages, loading, openChat, closeChat, sendMessage, clearChat } = useChat();
   const [inputText, setInputText] = useState('');
@@ -46,7 +45,6 @@ export default function GlobalAiChatbot() {
           <motion.button
             onClick={openChat}
             className="fixed bottom-12 right-6 z-40 p-3 rounded-full text-white shadow-2xl flex items-center gap-2.5 transition-all group"
-
             style={{
               background: 'linear-gradient(135deg, #14b8a6, #0d9488)',
               boxShadow: '0 8px 32px rgba(20, 184, 166, 0.4), 0 0 20px rgba(13, 148, 136, 0.3)',
@@ -74,18 +72,17 @@ export default function GlobalAiChatbot() {
           <motion.div
             className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[420px] h-[580px] max-h-[85vh] rounded-2xl flex flex-col overflow-hidden border shadow-2xl"
             style={{
-              background: 'rgba(5, 34, 34, 0.95)',
-              backdropFilter: 'blur(24px)',
+              background: 'rgba(3, 20, 20, 0.95)',
+              backdropFilter: 'blur(20px)',
               borderColor: 'rgba(20, 184, 166, 0.3)',
-              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(20, 184, 166, 0.15)',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(20, 184, 166, 0.15)',
             }}
-            initial={{ opacity: 0, y: 40, scale: 0.92 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 40, scale: 0.92 }}
-            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+            initial={{ y: 50, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 50, opacity: 0, scale: 0.95 }}
           >
             {/* Header */}
-            <div className="px-4 py-3.5 border-b flex items-center justify-between" style={{ background: 'rgba(10, 50, 50, 0.9)', borderColor: 'rgba(255,255,255,0.08)' }}>
+            <div className="p-3.5 border-b flex items-center justify-between" style={{ background: 'rgba(10, 46, 46, 0.95)', borderColor: 'rgba(255,255,255,0.08)' }}>
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg, #14b8a6, #0d9488)' }}>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
@@ -212,7 +209,6 @@ export default function GlobalAiChatbot() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
               </button>
             </form>
-
           </motion.div>
         )}
       </AnimatePresence>
