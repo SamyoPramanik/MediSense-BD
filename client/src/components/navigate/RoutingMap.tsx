@@ -157,7 +157,10 @@ export default function RoutingMap({
         style={{ background: '#031c1c' }}
         attributionControl={false}
       >
-        <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
         <MapController selectedHospital={selectedHospital} userLocation={userLocation} routeGeometry={routeGeometry} />
 
         {/* Equity Heatmap Circles */}

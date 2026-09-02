@@ -34,8 +34,8 @@ export default function ChoroplethMap({ outbreaks, onDistrictClick }: { outbreak
       <MapContainer center={BANGLADESH_CENTER} zoom={BANGLADESH_ZOOM} className="w-full h-full" style={{ background: '#031c1c' }}
         zoomControl={true} attributionControl={false}>
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; CartoDB'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {outbreaks.filter(o => o.lat && o.lng).map((item) => (
           <CircleMarker
