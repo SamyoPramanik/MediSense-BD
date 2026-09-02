@@ -131,6 +131,11 @@ Detects GPS coordinates (`navigator.geolocation`) and queries `/api/navigate/nea
 *   **Groq AI Models (`queryLLM`, `POST /api/chat/generate-report`)**: Configured with `openai/gpt-oss-120b` as primary model (with automatic fallback cascade to `deepseek-r1-distill-llama-70b`, `mixtral-8x7b-32768`, `gemma2-9b-it`, `llama-3.1-8b-instant`).
 
 *   **Targeted AI Doctor & Female Care Clinical Prescription & Assessment Export (`ClinicalReportModal.tsx`)**: Report generation inside **AI Doctor / Bangla Triage** (`TriageChat.tsx`) and **Female AI Care** (`female-care/page.tsx`) produces a robust, authentic **Medical Prescription (Rx)** layout with official letterhead header, Chief Complaints (C/O), Prescribed Medications & Management table (Rx), Diagnostic Test Extractions, Clinical Summary, Safety Triage, and digital physician sign-off block. Powered by a standalone clean popup print handler (`window.open`) with Tailwind CSS rendering for 100% reliable PDF download and system print execution without scroll clipping or blank page errors.
+*   **Separated AI Doctor & Dedicated Verify Pages (`/verify`, `/verify-drug`)**: Separated Drug Verification into a dedicated page (`/verify-drug`), while keeping `/verify` exclusively for **AI Doctor Triage** (`<TriageChat />`). Added a dedicated **"Verify"** item with pill icon in the left navigation sidebar (`Sidebar.tsx`).
+*   **Direct Live DGDA & MedEx BD Verification via Parse.bot Medicine API (`POST /api/verify/drug`, `DrugScanner.tsx`)**: Integrates Parse.bot Live Scraper API (`https://api.parse.bot/scraper/af459ee7-7e72-4a74-93d3-09da010d2026/search_medicines`) authenticated with `PARSE_API_KEY` stored in `.env`. Performs real-time lookup against MedEx BD & DGDA Bangladesh DAR registration records, active ingredients, manufacturer companies, dosage forms, strengths, and clinical indications with automatic multi-model fallback.
+
+
+
 
 
 

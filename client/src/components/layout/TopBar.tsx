@@ -80,7 +80,8 @@ export default function TopBar() {
                 <div className="mb-3">
                   <p className="text-xs text-teal-400 font-semibold uppercase tracking-wider mb-1">Drugs</p>
                   {results.drugs.map((d) => (
-                    <Link key={d.id} href="/verify" onClick={() => setShowResults(false)}
+                    <Link key={d.id} href="/verify-drug" onClick={() => setShowResults(false)}
+
                       className="block px-3 py-1.5 rounded-lg hover:bg-white/5 text-sm text-white/80">
                       {d.brand_name} <span className="text-white/40">({d.generic_name})</span>
                       {d.status === 'counterfeit' && <span className="ml-2 text-red-400 text-xs">⚠ Counterfeit</span>}

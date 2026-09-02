@@ -14,8 +14,10 @@ export const NAV_ITEMS = [
   { id: 'predict', label: 'Predict', href: '/predict', icon: 'predict' },
   { id: 'navigate', label: 'Navigate', href: '/navigate', icon: 'navigate' },
   { id: 'aiDoctor', label: 'AI Doctor', href: '/verify', icon: 'aiDoctor' },
+  { id: 'verify', label: 'Verify', href: '/verify-drug', icon: 'verify' },
   { id: 'settings', label: 'Settings', href: '/settings', icon: 'settings' },
 ] as const;
+
 
 export const BANGLADESH_CENTER: [number, number] = [23.685, 90.3563];
 export const BANGLADESH_ZOOM = 7;

@@ -153,9 +153,10 @@ export const verifyApi = {
     recommendation: string; confidence: number; model: string;
   }>('/verify/triage', { method: 'POST', body: JSON.stringify({ symptoms_text }) }),
   drug: (data: { barcode?: string; drug_name?: string }) => apiFetch<{
-    found: boolean; is_authentic: boolean; confidence: number; message: string;
-    drug?: { brand_name: string; generic_name: string; manufacturer: string; dosage_form: string; strength: string; status: string };
+    found: boolean; is_authentic: boolean; confidence: number; message: string; source?: string;
+    drug?: { brand_name: string; generic_name: string; manufacturer: string; dosage_form: string; strength: string; status: string; dar_number?: string; medex_id?: string; indication?: string };
   }>('/verify/drug', { method: 'POST', body: JSON.stringify(data) }),
+
 };
 
 // Search
